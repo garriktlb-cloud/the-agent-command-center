@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Listings from "@/pages/Listings";
+import ListingDetail from "@/pages/ListingDetail";
 import Transactions from "@/pages/Transactions";
 import TransactionDetail from "@/pages/TransactionDetail";
 import Orders from "@/pages/Orders";
