@@ -8,6 +8,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Listings from "@/pages/Listings";
 import Transactions from "@/pages/Transactions";
+import TransactionDetail from "@/pages/TransactionDetail";
 import Orders from "@/pages/Orders";
 import Auth from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/listings" element={<Listings />} />
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/transactions/:id" element={<TransactionDetail />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/vendors" element={<PlaceholderPage title="Vendors" />} />
               <Route path="/tasks" element={<PlaceholderPage title="Tasks" />} />
