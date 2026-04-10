@@ -11,16 +11,16 @@ interface OrderRowProps {
 }
 
 const statusStyles: Record<string, string> = {
-  Pending: "bg-warning/10 text-warning border-warning/20",
-  Scheduled: "bg-info/10 text-info border-info/20",
-  "In Progress": "bg-accent/10 text-accent border-accent/20",
-  Completed: "bg-success/10 text-success border-success/20",
+  Pending: "bg-foreground/5 text-foreground/60 border-foreground/10",
+  Scheduled: "bg-foreground/8 text-foreground/70 border-foreground/15",
+  "In Progress": "bg-foreground/5 text-foreground/60 border-foreground/10",
+  Completed: "bg-foreground/10 text-foreground border-foreground/20",
 };
 
 const billingStyles: Record<string, string> = {
   "Not billed": "text-muted-foreground",
-  Billed: "text-warning",
-  Paid: "text-success",
+  Billed: "text-foreground/70",
+  Paid: "text-foreground",
 };
 
 export default function OrderRow({ service, property, vendor, status, dueDate, price, billing }: OrderRowProps) {

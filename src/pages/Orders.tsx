@@ -56,7 +56,7 @@ export default function Orders() {
         </div>
         <div className="rounded-lg border bg-card p-3">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">Unbilled</p>
-          <p className="text-xl font-heading font-bold mt-1 text-warning">$995</p>
+          <p className="text-xl font-heading font-bold mt-1">$995</p>
         </div>
       </div>
 

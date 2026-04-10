@@ -121,7 +121,7 @@ export default function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-heading font-semibold">Your Listings</h2>
-          <Button variant="ghost" size="sm" className="text-accent">View all</Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground">View all</Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {listings.map((l) => (
@@ -134,7 +134,7 @@ export default function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-heading font-semibold">Active Orders</h2>
-          <Button variant="ghost" size="sm" className="text-accent">View all</Button>
+          <Button variant="ghost" size="sm" className="text-muted-foreground">View all</Button>
         </div>
         <div className="space-y-2">
           {orders.map((o, i) => (

@@ -11,7 +11,7 @@ interface Deal {
   stage: string;
   healthScore: number;
   daysToClose: number;
-  alerts: { label: string; color: "red" | "amber" | "green" }[];
+  alerts: { label: string; severity: "critical" | "warning" | "clear" }[];
 }
 
 const deals: Deal[] = [
@@ -23,10 +23,10 @@ const deals: Deal[] = [
     healthScore: 94,
     daysToClose: 4,
     alerts: [
-      { label: "Inspection", color: "green" },
-      { label: "Loan", color: "red" },
-      { label: "Title", color: "green" },
-      { label: "Appraisal", color: "amber" },
+      { label: "Inspection", severity: "clear" },
+      { label: "Loan", severity: "critical" },
+      { label: "Title", severity: "clear" },
+      { label: "Appraisal", severity: "warning" },
     ],
   },
   {
@@ -37,9 +37,9 @@ const deals: Deal[] = [
     healthScore: 72,
     daysToClose: 28,
     alerts: [
-      { label: "Earnest money", color: "red" },
-      { label: "Inspection", color: "amber" },
-      { label: "Loan", color: "amber" },
+      { label: "Earnest money", severity: "critical" },
+      { label: "Inspection", severity: "warning" },
+      { label: "Loan", severity: "warning" },
     ],
   },
   {
@@ -50,8 +50,8 @@ const deals: Deal[] = [
     healthScore: 85,
     daysToClose: 21,
     alerts: [
-      { label: "Inspection", color: "green" },
-      { label: "Appraisal", color: "amber" },
+      { label: "Inspection", severity: "clear" },
+      { label: "Appraisal", severity: "warning" },
     ],
   },
   {
@@ -62,17 +62,17 @@ const deals: Deal[] = [
     healthScore: 45,
     daysToClose: 42,
     alerts: [
-      { label: "Contract", color: "red" },
-      { label: "Earnest money", color: "red" },
+      { label: "Contract", severity: "critical" },
+      { label: "Earnest money", severity: "critical" },
     ],
   },
 ];
 
 function healthColor(score: number) {
-  if (score >= 90) return "bg-success text-success-foreground";
-  if (score >= 80) return "bg-info text-info-foreground";
-  if (score >= 60) return "bg-warning text-warning-foreground";
-  return "bg-destructive text-destructive-foreground";
+  if (score >= 90) return "bg-foreground text-background";
+  if (score >= 80) return "bg-foreground/80 text-background";
+  if (score >= 60) return "bg-foreground/50 text-background";
+  return "bg-foreground/30 text-foreground";
 }
 
 function healthLabel(score: number) {
@@ -82,10 +82,10 @@ function healthLabel(score: number) {
   return "At Risk";
 }
 
-const alertColors = {
-  red: "text-destructive",
-  amber: "text-warning",
-  green: "text-success",
+const severityIcon: Record<string, string> = {
+  critical: "!",
+  warning: "·",
+  clear: "✓",
 };
 
 export default function Transactions() {
@@ -112,11 +112,11 @@ export default function Transactions() {
             {/* Header */}
             <div className="bg-primary px-4 py-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-primary-foreground/70">
+                <p className="text-[10px] uppercase tracking-wider text-primary-foreground/60">
                   {deal.type} · {deal.stage}
                 </p>
                 <h3 className="font-heading font-bold text-primary-foreground text-lg">{deal.address}</h3>
-                <p className="text-xs text-primary-foreground/70">{deal.price} · {deal.daysToClose} days to close</p>
+                <p className="text-xs text-primary-foreground/60">{deal.price} · {deal.daysToClose} days to close</p>
               </div>
               <div className={`flex flex-col items-center justify-center rounded-md px-2.5 py-1.5 ${healthColor(deal.healthScore)}`}>
                 <span className="text-lg font-heading font-bold">{deal.healthScore}</span>
@@ -129,8 +129,8 @@ export default function Transactions() {
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Deal Health</p>
               <div className="flex flex-wrap gap-2 mb-3">
                 {deal.alerts.map((a) => (
-                  <span key={a.label} className={`text-xs font-medium ${alertColors[a.color]}`}>
-                    {a.color === "green" ? "✓" : a.color === "red" ? "⚠" : "◉"} {a.label}
+                  <span key={a.label} className={`text-xs font-medium ${a.severity === "critical" ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                    {severityIcon[a.severity]} {a.label}
                   </span>
                 ))}
               </div>
