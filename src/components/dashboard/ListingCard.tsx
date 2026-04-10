@@ -12,18 +12,10 @@ interface ListingCardProps {
   nextAction: string;
 }
 
-const statusColors = {
-  blue: "bg-info text-info-foreground",
-  green: "bg-success text-success-foreground",
-  amber: "bg-warning text-warning-foreground",
-  purple: "bg-accent text-accent-foreground",
-};
-
 export default function ListingCard({
   address,
   agent,
   status,
-  statusColor,
   readiness,
   checklist,
   nextAction,
@@ -32,7 +24,7 @@ export default function ListingCard({
     <div className="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-heading font-semibold text-sm">{address}</h4>
-        <Badge className={statusColors[statusColor]} variant="secondary">
+        <Badge variant="outline" className="bg-foreground/5 text-foreground/70 border-foreground/15 text-[10px]">
           {status}
         </Badge>
       </div>
@@ -48,9 +40,9 @@ export default function ListingCard({
         {checklist.map((item) => (
           <div key={item.label} className="flex items-center gap-2 text-xs">
             {item.done ? (
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-foreground/50" />
             ) : (
-              <Circle className="h-3.5 w-3.5 text-muted-foreground" />
+              <Circle className="h-3.5 w-3.5 text-muted-foreground/50" />
             )}
             <span className={item.done ? "text-muted-foreground" : ""}>{item.label}</span>
           </div>
