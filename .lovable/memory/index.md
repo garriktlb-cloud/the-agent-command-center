@@ -2,7 +2,7 @@
 
 ## Core
 The List Bar — real estate ops platform, NOT a CRM. Orders are core revenue.
-Inter font throughout. Palette: white bg, graphite #303036 primary. Clean & modern.
+Urbanist font throughout. Palette: #383F51 primary, #9D8189 accent, #F2F1EF bg.
 User loop: See → Act → Delegate → Track → Complete → Pay → Improve.
 Prioritize: Orders > Listings & Transactions > Deadlines > Everything else.
 
