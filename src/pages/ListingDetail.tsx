@@ -535,43 +535,51 @@ export default function ListingDetail() {
 
         {/* ── Details Tab ── */}
         <TabsContent value="details" className="mt-6">
-          <div className="rounded-lg border bg-card p-6">
-            <h2 className="font-heading font-semibold mb-6">All Listing Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
-                  Property
-                </p>
-                <dl className="space-y-3">
-                  <DetailRow label="Address" value={listing.address} />
-                  <DetailRow label="City" value={listing.city || "—"} />
-                  <DetailRow label="State" value={listing.state || "—"} />
-                  <DetailRow label="Zip" value={listing.zip || "—"} />
-                  <DetailRow label="List price" value={listing.price ? `$${listing.price.toLocaleString()}` : "—"} />
-                  <DetailRow label="MLS #" value={listing.mls_number || "—"} />
-                  <DetailRow label="Listing type" value={listing.listing_type === "seller" ? "Seller" : "Buyer"} />
-                </dl>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
-                  Parties & Dates
-                </p>
-                <dl className="space-y-3">
-                  <DetailRow label="Seller" value={listing.seller_name || "—"} />
-                  <DetailRow label="Status" value={stageLabels[listing.status] || listing.status} />
-                  <DetailRow label="List date" value={listing.listing_date || "—"} />
-                  <DetailRow label="Expiration" value={listing.expiration_date || "—"} />
-                </dl>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Property Details Form */}
+            <div className="rounded-lg border bg-card p-6">
+              <MarketingDetailsForm listingId={listing.id} listing={listing} />
             </div>
-            {listing.notes && (
-              <div className="mt-8">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
-                  Notes
-                </p>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.notes}</p>
+
+            {/* Contract / Listing Info (read-only) */}
+            <div className="rounded-lg border bg-card p-6">
+              <h3 className="font-heading font-semibold mb-6">Contract Info</h3>
+              <div className="space-y-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
+                    Property
+                  </p>
+                  <dl className="space-y-3">
+                    <DetailRow label="Address" value={listing.address} />
+                    <DetailRow label="City" value={listing.city || "—"} />
+                    <DetailRow label="State" value={listing.state || "—"} />
+                    <DetailRow label="Zip" value={listing.zip || "—"} />
+                    <DetailRow label="List price" value={listing.price ? `$${listing.price.toLocaleString()}` : "—"} />
+                    <DetailRow label="MLS #" value={listing.mls_number || "—"} />
+                    <DetailRow label="Listing type" value={listing.listing_type === "seller" ? "Seller" : "Buyer"} />
+                  </dl>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
+                    Parties & Dates
+                  </p>
+                  <dl className="space-y-3">
+                    <DetailRow label="Seller" value={listing.seller_name || "—"} />
+                    <DetailRow label="Status" value={stageLabels[listing.status] || listing.status} />
+                    <DetailRow label="List date" value={listing.listing_date || "—"} />
+                    <DetailRow label="Expiration" value={listing.expiration_date || "—"} />
+                  </dl>
+                </div>
               </div>
-            )}
+              {listing.notes && (
+                <div className="mt-8">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
+                    Notes
+                  </p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.notes}</p>
+                </div>
+              )}
+            </div>
           </div>
         </TabsContent>
 
