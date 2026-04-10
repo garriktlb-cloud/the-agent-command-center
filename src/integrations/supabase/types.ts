@@ -385,6 +385,62 @@ export type Database = {
           },
         ]
       }
+      transaction_checklist_items: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          done: boolean
+          handled_by: string | null
+          id: string
+          label: string
+          notes: string | null
+          section: string
+          service_type: string | null
+          sort_order: number
+          transaction_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          done?: boolean
+          handled_by?: string | null
+          id?: string
+          label: string
+          notes?: string | null
+          section?: string
+          service_type?: string | null
+          sort_order?: number
+          transaction_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          done?: boolean
+          handled_by?: string | null
+          id?: string
+          label?: string
+          notes?: string | null
+          section?: string
+          service_type?: string | null
+          sort_order?: number
+          transaction_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_checklist_items_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           buyer_name: string | null
