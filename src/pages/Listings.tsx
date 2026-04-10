@@ -165,6 +165,7 @@ function KanbanBoard({ listings, onView }: { listings: Listing[]; onView: (id: s
 export default function Listings() {
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data: listings, isLoading } = useQuery({
