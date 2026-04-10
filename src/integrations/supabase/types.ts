@@ -104,58 +104,85 @@ export type Database = {
         Row: {
           address: string
           assigned_to: string | null
+          bathrooms: number | null
+          bedrooms: number | null
           city: string | null
           created_at: string
+          description: string | null
           expiration_date: string | null
+          features: string[] | null
+          garage_spaces: number | null
           id: string
           listing_date: string | null
           listing_type: Database["public"]["Enums"]["listing_type"]
+          lot_size: string | null
           mls_number: string | null
           notes: string | null
           price: number | null
+          property_type: string | null
           seller_name: string | null
+          sqft: number | null
           state: string | null
           status: Database["public"]["Enums"]["listing_status"]
           updated_at: string
           user_id: string
+          year_built: number | null
           zip: string | null
         }
         Insert: {
           address: string
           assigned_to?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           city?: string | null
           created_at?: string
+          description?: string | null
           expiration_date?: string | null
+          features?: string[] | null
+          garage_spaces?: number | null
           id?: string
           listing_date?: string | null
           listing_type?: Database["public"]["Enums"]["listing_type"]
+          lot_size?: string | null
           mls_number?: string | null
           notes?: string | null
           price?: number | null
+          property_type?: string | null
           seller_name?: string | null
+          sqft?: number | null
           state?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           updated_at?: string
           user_id: string
+          year_built?: number | null
           zip?: string | null
         }
         Update: {
           address?: string
           assigned_to?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           city?: string | null
           created_at?: string
+          description?: string | null
           expiration_date?: string | null
+          features?: string[] | null
+          garage_spaces?: number | null
           id?: string
           listing_date?: string | null
           listing_type?: Database["public"]["Enums"]["listing_type"]
+          lot_size?: string | null
           mls_number?: string | null
           notes?: string | null
           price?: number | null
+          property_type?: string | null
           seller_name?: string | null
+          sqft?: number | null
           state?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           updated_at?: string
           user_id?: string
+          year_built?: number | null
           zip?: string | null
         }
         Relationships: []
