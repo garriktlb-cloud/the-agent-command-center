@@ -3,7 +3,21 @@ import ListingCard from "@/components/dashboard/ListingCard";
 import OrderRow from "@/components/dashboard/OrderRow";
 import DeadlineItem from "@/components/dashboard/DeadlineItem";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Home, DollarSign, FileText, Search, Key } from "lucide-react";
+
+// Mini sparkline SVG for Projected GCI
+const SparkLine = () => (
+  <svg viewBox="0 0 60 28" className="w-14 h-7 text-foreground/30">
+    <polyline
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      points="2,22 10,18 18,20 26,14 34,16 42,8 50,10 58,4"
+    />
+  </svg>
+);
 
 const listings = [
   {
@@ -71,40 +85,40 @@ const orders = [
 ];
 
 const deadlines = [
-  { label: "Inspection objection deadline", property: "76 S Humboldt St", date: "Today", urgency: "red" as const },
-  { label: "Earnest money due", property: "1420 Pearl St", date: "Tomorrow", urgency: "red" as const },
-  { label: "Pre-CDA review due", property: "76 S Humboldt St", date: "Apr 13", urgency: "amber" as const },
-  { label: "Appraisal scheduled", property: "890 Broadway", date: "Apr 15", urgency: "normal" as const },
-  { label: "Closing", property: "76 S Humboldt St", date: "Apr 16", urgency: "normal" as const },
+  { label: "Inspection objection deadline", property: "76 S Humboldt St", date: "Today", urgency: "red" as const, icon: <Search className="h-4 w-4 text-foreground/60" /> },
+  { label: "Earnest money due", property: "1420 Pearl St", date: "Tomorrow", urgency: "red" as const, icon: <DollarSign className="h-4 w-4 text-foreground/60" /> },
+  { label: "Pre-CDA review due", property: "76 S Humboldt St", date: "Apr 13", urgency: "amber" as const, icon: <FileText className="h-4 w-4 text-muted-foreground" /> },
+  { label: "Appraisal scheduled", property: "890 Broadway", date: "Apr 15", urgency: "normal" as const, icon: <Search className="h-4 w-4 text-muted-foreground" /> },
+  { label: "Closing", property: "76 S Humboldt St", date: "Apr 16", urgency: "normal" as const, icon: <Key className="h-4 w-4 text-muted-foreground" /> },
 ];
 
 export default function Dashboard() {
   const today = new Date();
   const greeting = today.getHours() < 12 ? "Good morning" : today.getHours() < 17 ? "Good afternoon" : "Good evening";
-  const dateStr = today.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  const dateStr = today.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }).toUpperCase();
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">{dateStr}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{dateStr}</p>
           <h1 className="text-2xl font-heading font-bold mt-0.5">{greeting}, Garrik.</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Run your listings and active deals in one place.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">Order Service</Button>
-          <Button size="sm"><Plus className="h-4 w-4 mr-1" />Start Listing</Button>
+          <Button size="sm" className="rounded-full h-9 w-9 p-0"><Plus className="h-4 w-4" /></Button>
         </div>
       </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <MetricCard label="Active Listings" value={4} variant="primary" />
-        <MetricCard label="Need Orders" value={2} />
-        <MetricCard label="Projected GCI" value="$85K" />
-        <MetricCard label="Launching Soon" value={2} />
-        <MetricCard label="Outstanding" value="$695" sublabel="2 invoices" />
+        <MetricCard label="Active Listings" value={4} variant="primary" icon={<Home className="h-5 w-5" />} />
+        <MetricCard label="Need Orders" value={2} showArrow />
+        <MetricCard label="Projected GCI" value="$85K" trailing={<SparkLine />} />
+        <MetricCard label="Launching Soon" value={2} showArrow />
+        <MetricCard label="Outstanding" value="$695" sublabel="2 invoices" showArrow />
       </div>
 
       {/* Deadlines */}
