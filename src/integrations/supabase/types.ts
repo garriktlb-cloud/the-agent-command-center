@@ -56,6 +56,7 @@ export type Database = {
       listings: {
         Row: {
           address: string
+          assigned_to: string | null
           city: string | null
           created_at: string
           expiration_date: string | null
@@ -65,6 +66,7 @@ export type Database = {
           mls_number: string | null
           notes: string | null
           price: number | null
+          seller_name: string | null
           state: string | null
           status: Database["public"]["Enums"]["listing_status"]
           updated_at: string
@@ -73,6 +75,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          assigned_to?: string | null
           city?: string | null
           created_at?: string
           expiration_date?: string | null
@@ -82,6 +85,7 @@ export type Database = {
           mls_number?: string | null
           notes?: string | null
           price?: number | null
+          seller_name?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           updated_at?: string
@@ -90,6 +94,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          assigned_to?: string | null
           city?: string | null
           created_at?: string
           expiration_date?: string | null
@@ -99,6 +104,7 @@ export type Database = {
           mls_number?: string | null
           notes?: string | null
           price?: number | null
+          seller_name?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           updated_at?: string
@@ -423,6 +429,7 @@ export type Database = {
         | "active"
         | "live"
         | "under_contract"
+        | "photography_scheduled"
       listing_type: "buyer" | "seller"
       order_status: "pending" | "in_progress" | "completed" | "cancelled"
       priority_level: "low" | "normal" | "high" | "urgent"
@@ -571,6 +578,7 @@ export const Constants = {
         "active",
         "live",
         "under_contract",
+        "photography_scheduled",
       ],
       listing_type: ["buyer", "seller"],
       order_status: ["pending", "in_progress", "completed", "cancelled"],
