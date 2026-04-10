@@ -3,11 +3,13 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Listings from "@/pages/Listings";
 import Transactions from "@/pages/Transactions";
 import Orders from "@/pages/Orders";
+import Auth from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,25 +27,28 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/listings" element={<Listings />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/vendors" element={<PlaceholderPage title="Vendors" />} />
-            <Route path="/tasks" element={<PlaceholderPage title="Tasks" />} />
-            <Route path="/contacts" element={<PlaceholderPage title="Contacts" />} />
-            <Route path="/marketing" element={<PlaceholderPage title="Marketing Center" />} />
-            <Route path="/coaching" element={<PlaceholderPage title="Coaching" />} />
-            <Route path="/performance" element={<PlaceholderPage title="Performance" />} />
-            <Route path="/business-tracker" element={<PlaceholderPage title="Business Tracker" />} />
-            <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
-            <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
-            <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/listings" element={<Listings />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/vendors" element={<PlaceholderPage title="Vendors" />} />
+              <Route path="/tasks" element={<PlaceholderPage title="Tasks" />} />
+              <Route path="/contacts" element={<PlaceholderPage title="Contacts" />} />
+              <Route path="/marketing" element={<PlaceholderPage title="Marketing Center" />} />
+              <Route path="/coaching" element={<PlaceholderPage title="Coaching" />} />
+              <Route path="/performance" element={<PlaceholderPage title="Performance" />} />
+              <Route path="/business-tracker" element={<PlaceholderPage title="Business Tracker" />} />
+              <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
+              <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
+              <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

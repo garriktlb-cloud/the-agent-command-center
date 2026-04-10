@@ -14,16 +14,428 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contacts: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          role_label: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          role_label?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          role_label?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          address: string
+          city: string | null
+          created_at: string
+          expiration_date: string | null
+          id: string
+          listing_date: string | null
+          listing_type: Database["public"]["Enums"]["listing_type"]
+          mls_number: string | null
+          notes: string | null
+          price: number | null
+          state: string | null
+          status: Database["public"]["Enums"]["listing_status"]
+          updated_at: string
+          user_id: string
+          zip: string | null
+        }
+        Insert: {
+          address: string
+          city?: string | null
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          listing_date?: string | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
+          mls_number?: string | null
+          notes?: string | null
+          price?: number | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["listing_status"]
+          updated_at?: string
+          user_id: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string | null
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          listing_date?: string | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
+          mls_number?: string | null
+          notes?: string | null
+          price?: number | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["listing_status"]
+          updated_at?: string
+          user_id?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          completed_at: string | null
+          cost: number | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          listing_id: string | null
+          priority: Database["public"]["Enums"]["priority_level"]
+          status: Database["public"]["Enums"]["order_status"]
+          title: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+          vendor_email: string | null
+          vendor_name: string | null
+          vendor_phone: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          cost?: number | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          listing_id?: string | null
+          priority?: Database["public"]["Enums"]["priority_level"]
+          status?: Database["public"]["Enums"]["order_status"]
+          title: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+          vendor_email?: string | null
+          vendor_name?: string | null
+          vendor_phone?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          cost?: number | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          listing_id?: string | null
+          priority?: Database["public"]["Enums"]["priority_level"]
+          status?: Database["public"]["Enums"]["order_status"]
+          title?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+          vendor_email?: string | null
+          vendor_name?: string | null
+          vendor_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          listing_id: string | null
+          order_id: string | null
+          priority: Database["public"]["Enums"]["priority_level"]
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          priority?: Database["public"]["Enums"]["priority_level"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          priority?: Database["public"]["Enums"]["priority_level"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          buyer_name: string | null
+          closing_date: string | null
+          contract_price: number | null
+          created_at: string
+          earnest_money_amount: number | null
+          earnest_money_due: string | null
+          health_score: number | null
+          id: string
+          listing_id: string | null
+          notes: string | null
+          seller_name: string | null
+          stage: Database["public"]["Enums"]["transaction_stage"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buyer_name?: string | null
+          closing_date?: string | null
+          contract_price?: number | null
+          created_at?: string
+          earnest_money_amount?: number | null
+          earnest_money_due?: string | null
+          health_score?: number | null
+          id?: string
+          listing_id?: string | null
+          notes?: string | null
+          seller_name?: string | null
+          stage?: Database["public"]["Enums"]["transaction_stage"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buyer_name?: string | null
+          closing_date?: string | null
+          contract_price?: number | null
+          created_at?: string
+          earnest_money_amount?: number | null
+          earnest_money_due?: string | null
+          health_score?: number | null
+          id?: string
+          listing_id?: string | null
+          notes?: string | null
+          seller_name?: string | null
+          stage?: Database["public"]["Enums"]["transaction_stage"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vendors: {
+        Row: {
+          category: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "agent" | "tc" | "admin"
+      listing_status:
+        | "new"
+        | "signed"
+        | "coming_soon"
+        | "active"
+        | "live"
+        | "under_contract"
+      listing_type: "buyer" | "seller"
+      order_status: "pending" | "in_progress" | "completed" | "cancelled"
+      priority_level: "low" | "normal" | "high" | "urgent"
+      task_status: "todo" | "in_progress" | "done"
+      transaction_stage:
+        | "contract_intake"
+        | "day_1"
+        | "earnest_money"
+        | "inspection"
+        | "loan_appraisal"
+        | "title"
+        | "pre_close"
+        | "closing"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +562,30 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["agent", "tc", "admin"],
+      listing_status: [
+        "new",
+        "signed",
+        "coming_soon",
+        "active",
+        "live",
+        "under_contract",
+      ],
+      listing_type: ["buyer", "seller"],
+      order_status: ["pending", "in_progress", "completed", "cancelled"],
+      priority_level: ["low", "normal", "high", "urgent"],
+      task_status: ["todo", "in_progress", "done"],
+      transaction_stage: [
+        "contract_intake",
+        "day_1",
+        "earnest_money",
+        "inspection",
+        "loan_appraisal",
+        "title",
+        "pre_close",
+        "closing",
+      ],
+    },
   },
 } as const
