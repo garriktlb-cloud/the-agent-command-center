@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, Circle, Plus } from "lucide-react";
+import { MarketingDetailsForm } from "@/components/forms/MarketingDetailsForm";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
