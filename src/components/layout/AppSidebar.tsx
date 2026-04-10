@@ -17,9 +17,11 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavItem {
   label: string;
@@ -106,6 +108,10 @@ function SidebarSection({
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  const displayEmail = user?.email || "";
 
   return (
     <aside
@@ -133,6 +139,36 @@ export default function AppSidebar() {
         <SidebarSection title="Growth" items={growthNav} collapsed={collapsed} />
         <SidebarSection title="Financial" items={financialNav} collapsed={collapsed} />
         <SidebarSection title="Account" items={accountNav} collapsed={collapsed} />
+      </div>
+
+      {/* User info & sign out */}
+      <div className="border-t border-sidebar-border px-3 py-3">
+        {!collapsed ? (
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground uppercase">
+              {displayName.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-sidebar-foreground truncate">{displayName}</p>
+              <p className="text-[10px] text-sidebar-muted truncate">{displayEmail}</p>
+            </div>
+            <button
+              onClick={signOut}
+              title="Sign out"
+              className="p-1.5 rounded-md text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={signOut}
+            title="Sign out"
+            className="flex w-full items-center justify-center p-1.5 rounded-md text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Collapse toggle */}
