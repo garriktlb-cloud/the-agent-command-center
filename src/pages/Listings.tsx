@@ -9,6 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { NewListingForm } from "@/components/forms/NewListingForm";
+import {
   Table,
   TableBody,
   TableCell,
@@ -157,6 +165,7 @@ function KanbanBoard({ listings, onView }: { listings: Listing[]; onView: (id: s
 export default function Listings() {
   const [view, setView] = useState<"table" | "kanban">("table");
   const [search, setSearch] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data: listings, isLoading } = useQuery({
@@ -184,7 +193,17 @@ export default function Listings() {
           <h1 className="text-2xl font-heading font-bold">Listings</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Prep, launch, and marketing coordination.</p>
         </div>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1" />New Listing</Button>
+        <Dialog open={newOpen} onOpenChange={setNewOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm"><Plus className="h-4 w-4 mr-1" />New Listing</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>New Listing</DialogTitle>
+            </DialogHeader>
+            <NewListingForm onSuccess={() => setNewOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex items-center gap-3">
