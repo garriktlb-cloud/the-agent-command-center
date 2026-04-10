@@ -90,7 +90,7 @@ function ListingsTable({ listings, onView }: { listings: Listing[]; onView: (id:
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  className=""
                   onClick={() => onView(l.id)}
                 >
                   <Eye className="h-4 w-4 mr-1" />
