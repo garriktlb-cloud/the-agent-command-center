@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
+  const { user, loading: authLoading } = useAuth();
+
+  // If already authenticated, redirect to dashboard
+  if (authLoading) return null;
+  if (user) return <Navigate to="/" replace />;
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
