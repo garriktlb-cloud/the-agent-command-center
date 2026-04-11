@@ -347,6 +347,7 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          handled_by: string | null
           id: string
           listing_id: string | null
           order_id: string | null
@@ -366,6 +367,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          handled_by?: string | null
           id?: string
           listing_id?: string | null
           order_id?: string | null
@@ -385,6 +387,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          handled_by?: string | null
           id?: string
           listing_id?: string | null
           order_id?: string | null
