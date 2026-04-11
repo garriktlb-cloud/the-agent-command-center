@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter } from "lucide-react";
+import { Filter, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type TaskType = "todo" | "email" | "call" | "meeting" | "follow_up" | "document";
 type Priority = "low" | "normal" | "high" | "urgent";
@@ -27,7 +28,6 @@ export default function Tasks() {
   const [filterType, setFilterType] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
 
-  // Fetch all tasks
   const { data: allTasks = [], isLoading } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
@@ -40,7 +40,6 @@ export default function Tasks() {
     },
   });
 
-  // Derived data
   const parentTasks: TaskRow[] = allTasks
     .filter((t) => !t.parent_task_id)
     .filter((t) => filterType === "all" || t.task_type === filterType)
@@ -64,7 +63,6 @@ export default function Tasks() {
       status: t.status as Status,
     }));
 
-  // Create task
   const createMutation = useMutation({
     mutationFn: async (data: {
       title: string;
@@ -73,6 +71,9 @@ export default function Tasks() {
       priority?: Priority;
       task_type?: TaskType;
       parent_task_id?: string;
+      listing_id?: string | null;
+      transaction_id?: string | null;
+      contact_id?: string | null;
     }) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase.from("tasks").insert({
@@ -83,6 +84,9 @@ export default function Tasks() {
         user_id: user.id,
         parent_task_id: data.parent_task_id || null,
         task_type: data.task_type || "todo",
+        listing_id: data.listing_id || null,
+        transaction_id: data.transaction_id || null,
+        contact_id: data.contact_id || null,
       });
       if (error) throw error;
     },
@@ -90,7 +94,6 @@ export default function Tasks() {
     onError: () => toast.error("Failed to create task"),
   });
 
-  // Update task
   const updateMutation = useMutation({
     mutationFn: async ({ id, field, value }: { id: string; field: string; value: unknown }) => {
       const updates: Record<string, unknown> = { [field]: value };
@@ -106,7 +109,6 @@ export default function Tasks() {
     onError: () => toast.error("Failed to update task"),
   });
 
-  // Delete task
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("tasks").delete().eq("id", id);
@@ -127,6 +129,8 @@ export default function Tasks() {
     if (!selectedId) return;
     updateMutation.mutate({ id: selectedId, field, value });
   };
+
+  const detailOpen = !!selectedTask;
 
   return (
     <div className="animate-fade-in h-[calc(100vh-4rem)]">
@@ -164,8 +168,11 @@ export default function Tasks() {
       </div>
 
       <div className="flex h-[calc(100%-3.25rem)]">
-        {/* Left panel */}
-        <div className="flex flex-col w-full md:w-[420px] border-r border-border">
+        {/* Task list — full width when no detail, shrinks when detail open */}
+        <div className={cn(
+          "flex flex-col border-r border-border transition-all duration-200",
+          detailOpen ? "w-full md:w-[420px]" : "w-full"
+        )}>
           <TaskQuickAdd onAdd={(task) => createMutation.mutate(task)} />
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
@@ -182,22 +189,22 @@ export default function Tasks() {
           )}
         </div>
 
-        {/* Right panel */}
-        <div className="hidden md:flex flex-1">
-          {selectedTask ? (
+        {/* Detail panel — only renders when a task is selected */}
+        {detailOpen && (
+          <div className="hidden md:flex flex-1 max-w-md border-l border-border">
             <div className="w-full">
               <TaskDetail
                 task={{
-                  id: selectedTask.id,
-                  title: selectedTask.title,
-                  description: selectedTask.description,
-                  status: selectedTask.status as Status,
-                  priority: selectedTask.priority as Priority,
-                  task_type: (selectedTask.task_type || "todo") as string,
-                  due_date: selectedTask.due_date,
-                  listing_id: selectedTask.listing_id,
-                  transaction_id: selectedTask.transaction_id,
-                  contact_id: selectedTask.contact_id,
+                  id: selectedTask!.id,
+                  title: selectedTask!.title,
+                  description: selectedTask!.description,
+                  status: selectedTask!.status as Status,
+                  priority: selectedTask!.priority as Priority,
+                  task_type: (selectedTask!.task_type || "todo") as string,
+                  due_date: selectedTask!.due_date,
+                  listing_id: selectedTask!.listing_id,
+                  transaction_id: selectedTask!.transaction_id,
+                  contact_id: selectedTask!.contact_id,
                 }}
                 subtasks={subtasks}
                 onUpdate={handleUpdate}
@@ -209,12 +216,8 @@ export default function Tasks() {
                 onSubtaskDelete={(id) => deleteMutation.mutate(id)}
               />
             </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-              Select a task to view details
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

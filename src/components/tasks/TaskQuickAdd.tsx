@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -23,9 +22,11 @@ import {
   CheckSquare,
   CornerDownRight,
   FileText,
+  Link2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import RelatedToPicker from "./RelatedToPicker";
 
 type TaskType = "todo" | "email" | "call" | "meeting" | "follow_up" | "document";
 type Priority = "low" | "normal" | "high" | "urgent";
@@ -37,6 +38,9 @@ interface TaskQuickAddProps {
     due_date?: string;
     priority?: Priority;
     task_type?: TaskType;
+    listing_id?: string | null;
+    transaction_id?: string | null;
+    contact_id?: string | null;
   }) => void;
 }
 
@@ -63,6 +67,9 @@ export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [priority, setPriority] = useState<Priority>("normal");
   const [taskType, setTaskType] = useState<TaskType>("todo");
+  const [listingId, setListingId] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+  const [contactId, setContactId] = useState<string | null>(null);
 
   const reset = () => {
     setTitle("");
@@ -70,6 +77,9 @@ export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
     setDueDate(undefined);
     setPriority("normal");
     setTaskType("todo");
+    setListingId(null);
+    setTransactionId(null);
+    setContactId(null);
     setOpen(false);
   };
 
@@ -82,8 +92,17 @@ export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
       due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : undefined,
       priority,
       task_type: taskType,
+      listing_id: listingId,
+      transaction_id: transactionId,
+      contact_id: contactId,
     });
     reset();
+  };
+
+  const handleRelatedChange = (field: string, value: string | null) => {
+    if (field === "listing_id") setListingId(value);
+    else if (field === "transaction_id") setTransactionId(value);
+    else if (field === "contact_id") setContactId(value);
   };
 
   if (!open) {
@@ -171,16 +190,23 @@ export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(TYPE_CONFIG).map(([key, cfg]) => {
-                const Icon = cfg.icon;
-                return (
-                  <SelectItem key={key} value={key} className="text-xs">
-                    {cfg.label}
-                  </SelectItem>
-                );
-              })}
+              {Object.entries(TYPE_CONFIG).map(([key, cfg]) => (
+                <SelectItem key={key} value={key} className="text-xs">
+                  {cfg.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Related To */}
+        <div className="pt-1">
+          <RelatedToPicker
+            listingId={listingId}
+            transactionId={transactionId}
+            contactId={contactId}
+            onChange={handleRelatedChange}
+          />
         </div>
       </div>
 
