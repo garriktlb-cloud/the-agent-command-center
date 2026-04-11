@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,6 +20,8 @@ import {
   CheckSquare,
   FileText,
   CornerDownRight,
+  Flag,
+  MoreHorizontal,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,13 @@ const TYPE_OPTIONS = [
   { value: "meeting", label: "Meeting", icon: Users },
   { value: "follow_up", label: "Follow Up", icon: CornerDownRight },
   { value: "document", label: "Document", icon: FileText },
+] as const;
+
+const PRIORITY_OPTIONS = [
+  { value: "urgent", label: "Urgent", color: "text-destructive" },
+  { value: "high", label: "High", color: "text-accent" },
+  { value: "normal", label: "Medium", color: "text-primary/60" },
+  { value: "low", label: "Low", color: "text-muted-foreground" },
 ] as const;
 
 interface TaskDetailData {
@@ -77,137 +85,146 @@ export default function TaskDetail({
   }, [task.id, task.title, task.description]);
 
   const handleTitleBlur = () => {
-    if (title.trim() && title !== task.title) {
-      onUpdate("title", title.trim());
-    }
+    if (title.trim() && title !== task.title) onUpdate("title", title.trim());
   };
 
   const handleDescBlur = () => {
-    if (description !== (task.description || "")) {
-      onUpdate("description", description || null);
-    }
+    if (description !== (task.description || "")) onUpdate("description", description || null);
   };
 
+  const currentPriority = PRIORITY_OPTIONS.find((p) => p.value === task.priority);
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-muted/20">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Task Details
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+          Task Detail
         </span>
-        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button className="text-muted-foreground hover:text-foreground p-1 rounded transition-colors">
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 rounded transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Title */}
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleTitleBlur}
-          className="border-0 shadow-none focus-visible:ring-0 px-0 text-lg font-semibold h-auto"
+          className="border-0 shadow-none focus-visible:ring-0 px-0 text-base font-semibold h-auto bg-transparent"
         />
 
-        {/* Description */}
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          onBlur={handleDescBlur}
-          placeholder="Add a description…"
-          className="border-0 shadow-none focus-visible:ring-0 px-0 resize-none min-h-[60px] text-sm"
-        />
+        {/* Task Setup Card */}
+        <div className="rounded-lg border border-border bg-background p-3 space-y-0">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">
+            Task Setup
+          </span>
 
-        {/* Metadata */}
-        <div className="flex flex-wrap gap-2">
-          {/* Task Type */}
-          <Select
-            value={task.task_type}
-            onValueChange={(v) => onUpdate("task_type", v)}
-          >
-            <SelectTrigger className="h-7 w-auto text-xs gap-1.5 border-dashed">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TYPE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Linked to */}
+          <div className="flex items-center justify-between py-2 border-b border-border/50">
+            <span className="text-xs text-muted-foreground">Linked to</span>
+            <RelatedToPicker
+              listingId={task.listing_id}
+              transactionId={task.transaction_id}
+              contactId={task.contact_id}
+              onChange={(field, value) => onUpdate(field, value)}
+            />
+          </div>
 
-          {/* Priority */}
-          <Select
-            value={task.priority}
-            onValueChange={(v) => onUpdate("priority", v)}
-          >
-            <SelectTrigger className="h-7 w-auto text-xs gap-1.5 border-dashed">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low" className="text-xs">Low</SelectItem>
-              <SelectItem value="normal" className="text-xs">Normal</SelectItem>
-              <SelectItem value="high" className="text-xs">High</SelectItem>
-              <SelectItem value="urgent" className="text-xs">Urgent</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Task type */}
+          <div className="flex items-center justify-between py-2 border-b border-border/50">
+            <span className="text-xs text-muted-foreground">Task type</span>
+            <Select value={task.task_type} onValueChange={(v) => onUpdate("task_type", v)}>
+              <SelectTrigger className="h-auto w-auto px-0 border-0 shadow-none text-xs font-medium gap-1 bg-transparent">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TYPE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Status */}
-          <Select
-            value={task.status}
-            onValueChange={(v) => onUpdate("status", v)}
-          >
-            <SelectTrigger className="h-7 w-auto text-xs gap-1.5 border-dashed">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todo" className="text-xs">To Do</SelectItem>
-              <SelectItem value="in_progress" className="text-xs">In Progress</SelectItem>
-              <SelectItem value="done" className="text-xs">Done</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Due Date */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 font-normal border-dashed">
-                <CalendarIcon className="h-3 w-3" />
-                {task.due_date ? format(new Date(task.due_date), "MMM d, yyyy") : "Due date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={task.due_date ? new Date(task.due_date) : undefined}
-                onSelect={(date) =>
-                  onUpdate("due_date", date ? format(date, "yyyy-MM-dd") : null)
-                }
-              />
-            </PopoverContent>
-          </Popover>
+          {/* Due date */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-xs text-muted-foreground">Due date</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="text-xs font-medium hover:text-foreground transition-colors">
+                  {task.due_date ? format(new Date(task.due_date), "MMM d, yyyy") : "Set date"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={task.due_date ? new Date(task.due_date) : undefined}
+                  onSelect={(date) => onUpdate("due_date", date ? format(date, "yyyy-MM-dd") : null)}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
-        {/* Related To */}
-        <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Related to
+        {/* Priority Card */}
+        <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+              Priority
+            </span>
+            <span className={cn("text-xs font-medium", currentPriority?.color)}>
+              {currentPriority?.label}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {PRIORITY_OPTIONS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => onUpdate("priority", p.value)}
+                className={cn(
+                  "p-1.5 rounded-md transition-all",
+                  task.priority === p.value
+                    ? "bg-foreground text-background"
+                    : "hover:bg-muted"
+                )}
+              >
+                <Flag className={cn("h-3.5 w-3.5", task.priority === p.value ? "" : p.color)} />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notes Card */}
+        <div className="rounded-lg border border-border bg-background p-3 space-y-1">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block">
+            Notes
           </span>
-          <RelatedToPicker
-            listingId={task.listing_id}
-            transactionId={task.transaction_id}
-            contactId={task.contact_id}
-            onChange={(field, value) => onUpdate(field, value)}
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onBlur={handleDescBlur}
+            placeholder="Add notes…"
+            className="border-0 shadow-none focus-visible:ring-0 px-0 resize-none min-h-[48px] text-xs bg-transparent"
           />
         </div>
 
         {/* Subtasks */}
-        <SubtaskList
-          subtasks={subtasks}
-          onToggle={onSubtaskToggle}
-          onAdd={onSubtaskAdd}
-          onDelete={onSubtaskDelete}
-        />
+        <div className="rounded-lg border border-border bg-background p-3">
+          <SubtaskList
+            subtasks={subtasks}
+            onToggle={onSubtaskToggle}
+            onAdd={onSubtaskAdd}
+            onDelete={onSubtaskDelete}
+          />
+        </div>
       </div>
     </div>
   );

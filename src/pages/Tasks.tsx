@@ -33,12 +33,20 @@ export default function Tasks() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tasks")
-        .select("*")
+        .select("*, listings(address), transactions(buyer_name, seller_name), contacts(name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const getRelatedLabel = (t: (typeof allTasks)[0]) => {
+    if ((t as any).contacts?.name) return `Client · ${(t as any).contacts.name}`;
+    if ((t as any).listings?.address) return `Deal · ${(t as any).listings.address}`;
+    const tx = (t as any).transactions;
+    if (tx?.buyer_name || tx?.seller_name) return `Deal · ${tx.buyer_name || tx.seller_name}`;
+    return null;
+  };
 
   const parentTasks: TaskRow[] = allTasks
     .filter((t) => !t.parent_task_id)
@@ -52,6 +60,7 @@ export default function Tasks() {
       task_type: (t.task_type || "todo") as TaskType,
       due_date: t.due_date,
       parent_task_id: t.parent_task_id,
+      related_label: getRelatedLabel(t),
     }));
 
   const selectedTask = allTasks.find((t) => t.id === selectedId);
