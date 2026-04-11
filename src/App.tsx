@@ -11,6 +11,7 @@ import ListingDetail from "@/pages/ListingDetail";
 import Transactions from "@/pages/Transactions";
 import TransactionDetail from "@/pages/TransactionDetail";
 import Orders from "@/pages/Orders";
+import Tasks from "@/pages/Tasks";
 import Auth from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -40,7 +41,7 @@ const App = () => (
               <Route path="/transactions/:id" element={<TransactionDetail />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/vendors" element={<PlaceholderPage title="Vendors" />} />
-              <Route path="/tasks" element={<PlaceholderPage title="Tasks" />} />
+              <Route path="/tasks" element={<Tasks />} />
               <Route path="/contacts" element={<PlaceholderPage title="Contacts" />} />
               <Route path="/marketing" element={<PlaceholderPage title="Marketing Center" />} />
               <Route path="/coaching" element={<PlaceholderPage title="Coaching" />} />
