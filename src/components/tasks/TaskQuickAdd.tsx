@@ -1,31 +1,203 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CalendarIcon,
+  Flag,
+  Plus,
+  X,
+  Mail,
+  Phone,
+  Users,
+  CheckSquare,
+  CornerDownRight,
+  FileText,
+} from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+type TaskType = "todo" | "email" | "call" | "meeting" | "follow_up" | "document";
+type Priority = "low" | "normal" | "high" | "urgent";
 
 interface TaskQuickAddProps {
-  onAdd: (title: string) => void;
+  onAdd: (task: {
+    title: string;
+    description?: string;
+    due_date?: string;
+    priority?: Priority;
+    task_type?: TaskType;
+  }) => void;
 }
 
-export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
-  const [value, setValue] = useState("");
+const PRIORITY_CONFIG: Record<Priority, { label: string; color: string }> = {
+  urgent: { label: "Urgent", color: "text-destructive" },
+  high: { label: "High", color: "text-accent" },
+  normal: { label: "Normal", color: "text-primary/60" },
+  low: { label: "Low", color: "text-muted-foreground" },
+};
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    onAdd(trimmed);
-    setValue("");
+const TYPE_CONFIG: Record<TaskType, { label: string; icon: typeof Mail }> = {
+  todo: { label: "To Do", icon: CheckSquare },
+  email: { label: "Email", icon: Mail },
+  call: { label: "Call", icon: Phone },
+  meeting: { label: "Meeting", icon: Users },
+  follow_up: { label: "Follow Up", icon: CornerDownRight },
+  document: { label: "Document", icon: FileText },
+};
+
+export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>();
+  const [priority, setPriority] = useState<Priority>("normal");
+  const [taskType, setTaskType] = useState<TaskType>("todo");
+
+  const reset = () => {
+    setTitle("");
+    setDescription("");
+    setDueDate(undefined);
+    setPriority("normal");
+    setTaskType("todo");
+    setOpen(false);
   };
 
+  const handleSubmit = () => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    onAdd({
+      title: trimmed,
+      description: description.trim() || undefined,
+      due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : undefined,
+      priority,
+      task_type: taskType,
+    });
+    reset();
+  };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 px-4 py-3 border-b border-border text-sm text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+      >
+        <Plus className="h-4 w-4 shrink-0" />
+        <span>Add task</span>
+      </button>
+    );
+  }
+
+  const TypeIcon = TYPE_CONFIG[taskType].icon;
+
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-3 border-b border-border">
-      <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="What needs to be done?"
-        className="border-0 shadow-none focus-visible:ring-0 px-0 h-8 text-sm"
-      />
-    </form>
+    <div className="border-b border-border">
+      <div className="px-4 pt-3 pb-2 space-y-2">
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Task name"
+          className="border-0 shadow-none focus-visible:ring-0 px-0 h-7 text-sm font-medium"
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+            if (e.key === "Escape") reset();
+          }}
+        />
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Description"
+          className="border-0 shadow-none focus-visible:ring-0 px-0 min-h-[24px] h-6 text-xs text-muted-foreground resize-none"
+          rows={1}
+        />
+
+        {/* Action chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Due Date */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border text-xs hover:bg-muted/50 transition-colors",
+                dueDate && "border-primary/30 bg-primary/5"
+              )}>
+                <CalendarIcon className="h-3 w-3" />
+                {dueDate ? format(dueDate, "MMM d") : "Due date"}
+                {dueDate && (
+                  <X
+                    className="h-3 w-3 ml-0.5 hover:text-destructive"
+                    onClick={(e) => { e.stopPropagation(); setDueDate(undefined); }}
+                  />
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dueDate} onSelect={setDueDate} />
+            </PopoverContent>
+          </Popover>
+
+          {/* Priority */}
+          <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+            <SelectTrigger className="h-auto w-auto px-2 py-0.5 border-dashed text-xs gap-1 [&>svg]:h-3 [&>svg]:w-3">
+              <Flag className={cn("h-3 w-3", PRIORITY_CONFIG[priority].color)} />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
+                <SelectItem key={key} value={key} className="text-xs">
+                  {cfg.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Task Type */}
+          <Select value={taskType} onValueChange={(v) => setTaskType(v as TaskType)}>
+            <SelectTrigger className="h-auto w-auto px-2 py-0.5 border-dashed text-xs gap-1 [&>svg]:h-3 [&>svg]:w-3">
+              <TypeIcon className="h-3 w-3" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(TYPE_CONFIG).map(([key, cfg]) => {
+                const Icon = cfg.icon;
+                return (
+                  <SelectItem key={key} value={key} className="text-xs">
+                    {cfg.label}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-2 px-4 py-2 border-t border-border/50">
+        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={reset}>
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          className="h-7 text-xs"
+          disabled={!title.trim()}
+          onClick={handleSubmit}
+        >
+          Add task
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -68,12 +68,18 @@ export default function Tasks() {
   const createMutation = useMutation({
     mutationFn: async (data: {
       title: string;
-      parent_task_id?: string;
+      description?: string;
+      due_date?: string;
+      priority?: Priority;
       task_type?: TaskType;
+      parent_task_id?: string;
     }) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase.from("tasks").insert({
         title: data.title,
+        description: data.description || null,
+        due_date: data.due_date || null,
+        priority: data.priority || "normal",
         user_id: user.id,
         parent_task_id: data.parent_task_id || null,
         task_type: data.task_type || "todo",
@@ -160,7 +166,7 @@ export default function Tasks() {
       <div className="flex h-[calc(100%-3.25rem)]">
         {/* Left panel */}
         <div className="flex flex-col w-full md:w-[420px] border-r border-border">
-          <TaskQuickAdd onAdd={(title) => createMutation.mutate({ title })} />
+          <TaskQuickAdd onAdd={(task) => createMutation.mutate(task)} />
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
               Loading…
