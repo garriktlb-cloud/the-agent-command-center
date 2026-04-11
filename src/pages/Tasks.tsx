@@ -160,7 +160,7 @@ export default function Tasks() {
       <div className="flex h-[calc(100%-3.25rem)]">
         {/* Left panel */}
         <div className="flex flex-col w-full md:w-[420px] border-r border-border">
-          <TaskQuickAdd onAdd={(title) => createMutation.mutate({ title })} />
+          <TaskQuickAdd onAdd={(task) => createMutation.mutate(task)} />
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
               Loading…
