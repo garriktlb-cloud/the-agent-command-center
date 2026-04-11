@@ -197,10 +197,8 @@ export default function TaskQuickAdd({ onAdd }: TaskQuickAddProps) {
               ))}
             </SelectContent>
           </Select>
-        </div>
 
-        {/* Related To */}
-        <div className="pt-1">
+          {/* Related To */}
           <RelatedToPicker
             listingId={listingId}
             transactionId={transactionId}
