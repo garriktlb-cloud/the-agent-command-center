@@ -55,6 +55,7 @@ interface TaskDetailData {
   listing_id: string | null;
   transaction_id: string | null;
   contact_id: string | null;
+  handled_by: string | null;
 }
 
 interface TaskDetailProps {
@@ -65,6 +66,9 @@ interface TaskDetailProps {
   onSubtaskToggle: (id: string, done: boolean) => void;
   onSubtaskAdd: (title: string) => void;
   onSubtaskDelete: (id: string) => void;
+  onBookDirectly?: () => void;
+  onWeHandleIt?: () => void;
+  onMarkComplete?: () => void;
 }
 
 export default function TaskDetail({
@@ -75,6 +79,9 @@ export default function TaskDetail({
   onSubtaskToggle,
   onSubtaskAdd,
   onSubtaskDelete,
+  onBookDirectly,
+  onWeHandleIt,
+  onMarkComplete,
 }: TaskDetailProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
@@ -223,6 +230,31 @@ export default function TaskDetail({
             onDelete={onSubtaskDelete}
           />
         </div>
+
+        {/* Action Buttons — only for transaction-linked tasks */}
+        {task.transaction_id && onBookDirectly && onWeHandleIt && onMarkComplete && (
+          <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest block">
+              Actions
+            </span>
+            {task.handled_by && (
+              <p className="text-xs text-muted-foreground">
+                Handled by: <span className="font-medium text-foreground">{task.handled_by === "listbar" ? "List Bar" : "You"}</span>
+              </p>
+            )}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={onBookDirectly}>
+                Book Directly
+              </Button>
+              <Button size="sm" className="flex-1 text-xs" onClick={onWeHandleIt}>
+                We'll handle it
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={onMarkComplete}>
+              <CheckSquare className="h-3 w-3 mr-1" /> Mark complete
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

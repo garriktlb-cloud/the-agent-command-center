@@ -1,0 +1,1 @@
+ALTER TABLE public.tasks ADD COLUMN handled_by text DEFAULT NULL;
