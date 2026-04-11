@@ -55,6 +55,7 @@ interface TaskDetailData {
   listing_id: string | null;
   transaction_id: string | null;
   contact_id: string | null;
+  handled_by: string | null;
 }
 
 interface TaskDetailProps {
@@ -65,6 +66,9 @@ interface TaskDetailProps {
   onSubtaskToggle: (id: string, done: boolean) => void;
   onSubtaskAdd: (title: string) => void;
   onSubtaskDelete: (id: string) => void;
+  onBookDirectly?: () => void;
+  onWeHandleIt?: () => void;
+  onMarkComplete?: () => void;
 }
 
 export default function TaskDetail({
@@ -75,6 +79,9 @@ export default function TaskDetail({
   onSubtaskToggle,
   onSubtaskAdd,
   onSubtaskDelete,
+  onBookDirectly,
+  onWeHandleIt,
+  onMarkComplete,
 }: TaskDetailProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
