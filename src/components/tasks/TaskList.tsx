@@ -42,9 +42,9 @@ const TYPE_ICONS: Record<string, typeof Mail> = {
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  urgent: "bg-red-500",
-  high: "bg-orange-400",
-  normal: "bg-blue-400",
+  urgent: "bg-destructive",
+  high: "bg-accent",
+  normal: "bg-primary/60",
   low: "bg-muted-foreground/30",
 };
 

@@ -93,7 +93,7 @@ export default function Tasks() {
       } else if (field === "status" && value !== "done") {
         updates.completed_at = null;
       }
-      const { error } = await supabase.from("tasks").update(updates).eq("id", id);
+      const { error } = await supabase.from("tasks").update(updates as any).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
