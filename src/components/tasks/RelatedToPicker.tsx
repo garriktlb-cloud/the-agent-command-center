@@ -76,10 +76,10 @@ export default function RelatedToPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 font-normal">
+        <button className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-dashed border-border text-xs hover:bg-muted/50 transition-colors">
           <Link2 className="h-3 w-3" />
           {linkedLabel || "Link to…"}
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <div className="p-2 border-b border-border">
