@@ -180,7 +180,7 @@ export default function Tasks() {
         {/* Task list — full width when no detail, shrinks when detail open */}
         <div className={cn(
           "flex flex-col border-r border-border transition-all duration-200",
-          detailOpen ? "w-full md:w-[420px]" : "w-full"
+          detailOpen ? "flex-1 min-w-0" : "w-full"
         )}>
           <TaskQuickAdd onAdd={(task) => createMutation.mutate(task)} />
           {isLoading ? (
@@ -200,8 +200,8 @@ export default function Tasks() {
 
         {/* Detail panel — only renders when a task is selected */}
         {detailOpen && (
-          <div className="hidden md:flex flex-1 max-w-md border-l border-border">
-            <div className="w-full">
+          <div className="hidden md:flex w-[380px] shrink-0">
+            <div className="w-full overflow-y-auto">
               <TaskDetail
                 task={{
                   id: selectedTask!.id,
