@@ -30,6 +30,8 @@ export interface TaskRow {
   due_date: string | null;
   parent_task_id: string | null;
   related_label?: string | null;
+  transaction_id?: string | null;
+  handled_by?: string | null;
 }
 
 const TYPE_ICONS: Record<string, typeof Mail> = {
@@ -63,9 +65,10 @@ interface TaskListProps {
   onSelect: (id: string) => void;
   onToggle: (id: string, done: boolean) => void;
   onDelete: (id: string) => void;
+  onAction?: (task: TaskRow) => void;
 }
 
-export default function TaskList({ tasks, selectedId, onSelect, onToggle, onDelete }: TaskListProps) {
+export default function TaskList({ tasks, selectedId, onSelect, onToggle, onDelete, onAction }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
 
   const parentTasks = tasks.filter((t) => !t.parent_task_id);
@@ -77,6 +80,8 @@ export default function TaskList({ tasks, selectedId, onSelect, onToggle, onDele
     const overdue =
       task.due_date && task.status !== "done" && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date));
     const isTodays = task.due_date && isToday(new Date(task.due_date));
+
+    const handledLabel = task.handled_by === "listbar" ? "List Bar" : task.handled_by === "self" ? "You" : null;
 
     const secondLine = [
       TYPE_LABELS[task.task_type] || "To Do",
@@ -115,6 +120,12 @@ export default function TaskList({ tasks, selectedId, onSelect, onToggle, onDele
         </div>
 
         <div className="flex items-center gap-2 shrink-0 pt-0.5">
+          {handledLabel && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+              {handledLabel}
+            </span>
+          )}
+
           {task.due_date && (
             <span
               className={cn(
@@ -127,6 +138,15 @@ export default function TaskList({ tasks, selectedId, onSelect, onToggle, onDele
           )}
 
           <Flag className={cn("h-3 w-3 shrink-0", PRIORITY_COLORS[task.priority])} />
+
+          {task.transaction_id && onAction && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onAction(task); }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger
