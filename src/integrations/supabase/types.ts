@@ -343,14 +343,17 @@ export type Database = {
         Row: {
           assigned_to: string | null
           completed_at: string | null
+          contact_id: string | null
           created_at: string
           description: string | null
           due_date: string | null
           id: string
           listing_id: string | null
           order_id: string | null
+          parent_task_id: string | null
           priority: Database["public"]["Enums"]["priority_level"]
           status: Database["public"]["Enums"]["task_status"]
+          task_type: Database["public"]["Enums"]["task_type"]
           title: string
           transaction_id: string | null
           updated_at: string
@@ -359,14 +362,17 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           completed_at?: string | null
+          contact_id?: string | null
           created_at?: string
           description?: string | null
           due_date?: string | null
           id?: string
           listing_id?: string | null
           order_id?: string | null
+          parent_task_id?: string | null
           priority?: Database["public"]["Enums"]["priority_level"]
           status?: Database["public"]["Enums"]["task_status"]
+          task_type?: Database["public"]["Enums"]["task_type"]
           title: string
           transaction_id?: string | null
           updated_at?: string
@@ -375,20 +381,30 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           completed_at?: string | null
+          contact_id?: string | null
           created_at?: string
           description?: string | null
           due_date?: string | null
           id?: string
           listing_id?: string | null
           order_id?: string | null
+          parent_task_id?: string | null
           priority?: Database["public"]["Enums"]["priority_level"]
           status?: Database["public"]["Enums"]["task_status"]
+          task_type?: Database["public"]["Enums"]["task_type"]
           title?: string
           transaction_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_listing_id_fkey"
             columns: ["listing_id"]
@@ -401,6 +417,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
           {
@@ -611,6 +634,13 @@ export type Database = {
       order_status: "pending" | "in_progress" | "completed" | "cancelled"
       priority_level: "low" | "normal" | "high" | "urgent"
       task_status: "todo" | "in_progress" | "done"
+      task_type:
+        | "todo"
+        | "email"
+        | "call"
+        | "meeting"
+        | "follow_up"
+        | "document"
       transaction_stage:
         | "contract_intake"
         | "day_1"
@@ -761,6 +791,7 @@ export const Constants = {
       order_status: ["pending", "in_progress", "completed", "cancelled"],
       priority_level: ["low", "normal", "high", "urgent"],
       task_status: ["todo", "in_progress", "done"],
+      task_type: ["todo", "email", "call", "meeting", "follow_up", "document"],
       transaction_stage: [
         "contract_intake",
         "day_1",
