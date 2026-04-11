@@ -1,56 +1,41 @@
 
 
-## Tasks Manager — Build Plan
+## Import Contract Checklist to Tasks
 
-Based on your reference screenshots (Todoist-style), here's the plan for a clean, modern task manager.
+### What it does
+Adds an "Import from Contract" button on the Tasks page. When clicked, agents pick a transaction, see its checklist items, and bulk-import them as tasks. Imported tasks carry the same action options available on the Transaction Detail page: **Book Directly**, **We'll handle it**, and **Mark as complete**.
 
-### Database Changes
+### Changes
 
-**Modify `tasks` table** — add columns:
-- `task_type` enum: `todo`, `email`, `call`, `meeting`, `follow_up`, `document`
-- `parent_task_id` (uuid, nullable, self-referencing) — enables subtasks
-- `contact_id` (uuid, nullable) — link to contacts table
+**1. New file: `src/components/tasks/ImportFromContractDialog.tsx`**
+- Dialog listing active transactions (with listing address)
+- On select, shows checklist items grouped by section (skips already-done items)
+- Select/deselect individual items before import
+- "Import" button creates a task per selected item with `transaction_id`, `listing_id`, `task_type: "todo"`, and `description` set to the checklist section name
 
-The existing columns already cover: `title`, `description`, `status` (todo/in_progress/done), `priority` (low/normal/high/urgent), `due_date`, `listing_id`, `transaction_id`, `order_id`, `assigned_to`, `completed_at`.
+**2. New file: `src/components/tasks/TaskActionPanel.tsx`**
+- Reusable action dialog matching the Transaction Detail pattern
+- Three options: "Book Directly" (sets `handled_by: self`), "We'll handle it" (sets `handled_by: listbar`), "Mark as complete" (toggles done)
+- Triggered from the task list row (chevron/action button) or the task detail panel
 
-### UI — Two-Panel Layout (like your screenshots)
+**3. Edit: `src/pages/Tasks.tsx`**
+- Add "Import from Contract" button in the header bar next to filters
+- Wire up the `ImportFromContractDialog` with the existing `createMutation`
+- Add `TaskActionPanel` dialog state, pass open/close handlers to the task list
 
-**Left panel — Task list**
-- Quick-add input at top ("What needs to be done?")
-- Tasks grouped by status: active tasks on top, "Completed" collapsible section at bottom
-- Each row: checkbox, task type icon, title, due date (red if overdue), priority indicator, three-dot menu
-- Filter bar: by type, priority, linked entity, overdue toggle
+**4. Edit: `src/components/tasks/TaskList.tsx`**
+- Add an action button (chevron) on each task row that opens the `TaskActionPanel`
+- Show a subtle badge/icon on tasks linked to a transaction (e.g. small house icon or "Deal" chip)
 
-**Right panel — Task detail** (appears when a task is selected)
-- Title (editable inline)
-- Description (editable)
-- Metadata chips: Due Date, Priority, Task Type
-- "Related to" picker — tabs for Business Tracker (listings/transactions) and Contacts, with search (matching your first screenshot)
-- Subtasks section: checklist of child tasks with inline add, each with its own checkbox
+**5. Edit: `src/components/tasks/TaskDetail.tsx`**
+- Add the same three action buttons ("Book Directly", "We'll handle it", "Mark complete") in the detail panel for tasks linked to a transaction
 
-### Components to Create
+**6. Database migration**
+- Add `handled_by` column (text, nullable) to the `tasks` table — stores `"listbar"` or `"self"`, matching the `transaction_checklist_items` pattern
 
-| File | Purpose |
-|------|---------|
-| `src/pages/Tasks.tsx` | Main page with two-panel layout |
-| `src/components/tasks/TaskList.tsx` | Left panel: grouped task list |
-| `src/components/tasks/TaskDetail.tsx` | Right panel: selected task view |
-| `src/components/tasks/TaskQuickAdd.tsx` | Inline task creation input |
-| `src/components/tasks/SubtaskList.tsx` | Checklist of subtasks within detail |
-| `src/components/tasks/RelatedToPicker.tsx` | Popover to link task to listing/transaction/contact |
-
-### Modifications
-
-- `src/App.tsx` — swap placeholder route for real Tasks page
-- Dashboard "Upcoming Deadlines" — wire to real task data (optional, can do later)
-
-### Interaction Details
-
-- Clicking a task in the list opens the detail panel on the right
-- Checking a task checkbox marks it done with a strikethrough animation
-- Subtasks are stored as tasks with `parent_task_id` set — same table, recursive
-- "Related to" popover searches listings, transactions, and contacts in tabbed view
-- Task type shows as a colored icon (phone for call, envelope for email, etc.)
-
-No drag-and-drop initially — status changes via dropdown or checkbox. Clean, minimal, Todoist-inspired.
+### Data flow
+- Transactions queried with `listings(address)` join for display
+- Checklist items queried from `transaction_checklist_items` filtered by selected transaction, `done = false`
+- Each imported item becomes a task row: `title` = label, `description` = section, `transaction_id` + `listing_id` set from the transaction
+- The `handled_by` field on tasks enables the same Book/Handle/Complete workflow from the transaction page
 
