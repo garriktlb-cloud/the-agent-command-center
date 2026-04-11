@@ -10,6 +10,7 @@ import {
   CornerDownRight,
   MoreHorizontal,
   ChevronDown,
+  Flag,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,7 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 
@@ -29,7 +29,7 @@ export interface TaskRow {
   task_type: "todo" | "email" | "call" | "meeting" | "follow_up" | "document";
   due_date: string | null;
   parent_task_id: string | null;
-  subtask_count?: number;
+  related_label?: string | null;
 }
 
 const TYPE_ICONS: Record<string, typeof Mail> = {
@@ -41,11 +41,20 @@ const TYPE_ICONS: Record<string, typeof Mail> = {
   document: FileText,
 };
 
+const TYPE_LABELS: Record<string, string> = {
+  email: "Email",
+  call: "Call",
+  meeting: "Meeting",
+  todo: "To Do",
+  follow_up: "Follow Up",
+  document: "Document",
+};
+
 const PRIORITY_COLORS: Record<string, string> = {
-  urgent: "bg-destructive",
-  high: "bg-accent",
-  normal: "bg-primary/60",
-  low: "bg-muted-foreground/30",
+  urgent: "text-destructive",
+  high: "text-accent",
+  normal: "text-primary/40",
+  low: "text-muted-foreground/30",
 };
 
 interface TaskListProps {
@@ -67,51 +76,57 @@ export default function TaskList({ tasks, selectedId, onSelect, onToggle, onDele
     const Icon = TYPE_ICONS[task.task_type] || CheckSquare;
     const overdue =
       task.due_date && task.status !== "done" && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date));
+    const isTodays = task.due_date && isToday(new Date(task.due_date));
+
+    const secondLine = [
+      TYPE_LABELS[task.task_type] || "To Do",
+      task.related_label,
+    ].filter(Boolean).join("  •  ");
 
     return (
       <div
         key={task.id}
         onClick={() => onSelect(task.id)}
         className={cn(
-          "flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors border-b border-border/50 group",
+          "flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-border/50 group",
           selectedId === task.id ? "bg-muted/80" : "hover:bg-muted/40"
         )}
       >
         <Checkbox
           checked={task.status === "done"}
-          onCheckedChange={(checked) => {
-            onToggle(task.id, !!checked);
-          }}
+          onCheckedChange={(checked) => onToggle(task.id, !!checked)}
           onClick={(e) => e.stopPropagation()}
-          className="h-4 w-4 shrink-0"
+          className="h-4 w-4 shrink-0 mt-0.5 rounded-full"
         />
-
-        <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
 
         <div className="flex-1 min-w-0">
           <span
             className={cn(
-              "text-sm block truncate",
+              "text-sm block truncate font-medium",
               task.status === "done" && "line-through text-muted-foreground"
             )}
           >
             {task.title}
           </span>
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
+            <Icon className="h-3 w-3 shrink-0" />
+            <span className="truncate">{secondLine}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 pt-0.5">
           {task.due_date && (
             <span
               className={cn(
                 "text-xs",
-                overdue ? "text-red-500 font-medium" : "text-muted-foreground"
+                overdue ? "text-destructive font-medium" : isTodays ? "text-foreground font-medium" : "text-muted-foreground"
               )}
             >
-              {format(new Date(task.due_date), "MMM d")}
+              {isTodays ? "Today" : format(new Date(task.due_date), "MMM d")}
             </span>
           )}
 
-          <div className={cn("h-2 w-2 rounded-full shrink-0", PRIORITY_COLORS[task.priority])} />
+          <Flag className={cn("h-3 w-3 shrink-0", PRIORITY_COLORS[task.priority])} />
 
           <DropdownMenu>
             <DropdownMenuTrigger
