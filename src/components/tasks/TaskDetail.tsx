@@ -38,10 +38,10 @@ const TYPE_OPTIONS = [
 ] as const;
 
 const PRIORITY_OPTIONS = [
-  { value: "urgent", label: "Urgent", color: "text-destructive" },
-  { value: "high", label: "High", color: "text-accent" },
-  { value: "normal", label: "Medium", color: "text-primary/60" },
-  { value: "low", label: "Low", color: "text-muted-foreground" },
+  { value: "urgent", label: "Urgent", color: "text-red-500", bg: "bg-red-500/15 ring-1 ring-red-500/30" },
+  { value: "high", label: "High", color: "text-orange-500", bg: "bg-orange-500/15 ring-1 ring-orange-500/30" },
+  { value: "normal", label: "Medium", color: "text-blue-500", bg: "bg-blue-500/15 ring-1 ring-blue-500/30" },
+  { value: "low", label: "Low", color: "text-muted-foreground", bg: "bg-muted ring-1 ring-border" },
 ] as const;
 
 interface TaskDetailData {
@@ -191,12 +191,10 @@ export default function TaskDetail({
                 onClick={() => onUpdate("priority", p.value)}
                 className={cn(
                   "p-1.5 rounded-md transition-all",
-                  task.priority === p.value
-                    ? "bg-foreground text-background"
-                    : "hover:bg-muted"
+                  task.priority === p.value ? p.bg : "hover:bg-muted"
                 )}
               >
-                <Flag className={cn("h-3.5 w-3.5", task.priority === p.value ? "" : p.color)} />
+                <Flag className={cn("h-3.5 w-3.5", p.color)} />
               </button>
             ))}
           </div>
