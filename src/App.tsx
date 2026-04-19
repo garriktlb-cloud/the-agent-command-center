@@ -34,6 +34,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+                          <Route path="/seed" element={<Seed />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/listings" element={<Listings />} />
@@ -51,7 +52,6 @@ const App = () => (
               <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
               <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
               <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
-              <Route path="/seed" element={<Seed />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
