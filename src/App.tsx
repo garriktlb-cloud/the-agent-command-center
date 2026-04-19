@@ -34,7 +34,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-                          <Route path="/seed" element={<Seed />} />
+            <Route path="/seed" element={<Seed />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/listings" element={<Listings />} />
