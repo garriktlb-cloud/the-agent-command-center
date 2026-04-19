@@ -13,6 +13,7 @@ import TransactionDetail from "@/pages/TransactionDetail";
 import Orders from "@/pages/Orders";
 import Tasks from "@/pages/Tasks";
 import Auth from "@/pages/Auth";
+import Seed from "@/pages/Seed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
               <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
               <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+              <Route path="/seed" element={<Seed />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
