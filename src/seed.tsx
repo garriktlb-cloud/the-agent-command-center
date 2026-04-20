@@ -40,7 +40,7 @@ export default function Seed() {
       addLog("Adding listings...");
       const { data: insertedListings, error: lErr } = await supabase
         .from("listings")
-        .insert(listings.map((l) => ({ ...l, user_id: user.id })))
+        .insert(listings.map((l) => ({ ...l, user_id: user.id })) as any)
         .select();
       if (lErr) throw new Error(`Listings: ${lErr.message}`);
       addLog(`✓ Added ${insertedListings.length} listings`);
@@ -49,7 +49,7 @@ export default function Seed() {
       addLog("Adding contacts...");
       const { data: insertedContacts, error: cErr } = await supabase
         .from("contacts")
-        .insert(contacts.map((c) => ({ ...c, user_id: user.id })))
+        .insert(contacts.map((c) => ({ ...c, user_id: user.id })) as any)
         .select();
       if (cErr) throw new Error(`Contacts: ${cErr.message}`);
       addLog(`✓ Added ${insertedContacts.length} contacts`);
@@ -68,7 +68,7 @@ export default function Seed() {
 
       const { data: insertedTxns, error: tErr } = await supabase
         .from("transactions")
-        .insert(transactions)
+        .insert(transactions as any)
         .select();
       if (tErr) throw new Error(`Transactions: ${tErr.message}`);
       addLog(`✓ Added ${insertedTxns.length} transactions`);
@@ -83,7 +83,7 @@ export default function Seed() {
 
       const { data: insertedOrders, error: oErr } = await supabase
         .from("orders")
-        .insert(orders)
+        .insert(orders as any)
         .select();
       if (oErr) throw new Error(`Orders: ${oErr.message}`);
       addLog(`✓ Added ${insertedOrders.length} orders`);
@@ -98,7 +98,7 @@ export default function Seed() {
         { user_id: user.id, listing_id: insertedListings[2].id, title: "Review photography proofs", status: "todo", priority: "normal", task_type: "todo", due_date: new Date(Date.now() + 5 * 86400000).toISOString().split("T")[0] },
       ];
 
-      const { error: taskErr } = await supabase.from("tasks").insert(tasks);
+      const { error: taskErr } = await supabase.from("tasks").insert(tasks as any);
       if (taskErr) throw new Error(`Tasks: ${taskErr.message}`);
       addLog(`✓ Added ${tasks.length} tasks`);
 
