@@ -1,41 +1,47 @@
 
+User answered all 3 questions:
+1. Files in Lovable Cloud storage
+2. "Request support" creates a task
+3. Search filters topics on Browse
 
-## Import Contract Checklist to Tasks
+Also need to address pre-existing build errors in seed files (enum type mismatches) so the build is green.
 
-### What it does
-Adds an "Import from Contract" button on the Tasks page. When clicked, agents pick a transaction, see its checklist items, and bulk-import them as tasks. Imported tasks carry the same action options available on the Transaction Detail page: **Book Directly**, **We'll handle it**, and **Mark as complete**.
+## Coaching Section
 
-### Changes
+### Pages
+- **`/coaching` — Index**
+  - Header: "Coaching with The List Bar"
+  - "Continue learning" row: 4 compact cards with thumbnail, title, thin progress bar (based on `coaching_progress`)
+  - "Browse topics" section with a search input — live client-side filter on title/description
+  - Grid of topic cards (thumbnail, title, description, "Explore" button)
 
-**1. New file: `src/components/tasks/ImportFromContractDialog.tsx`**
-- Dialog listing active transactions (with listing address)
-- On select, shows checklist items grouped by section (skips already-done items)
-- Select/deselect individual items before import
-- "Import" button creates a task per selected item with `transaction_id`, `listing_id`, `task_type: "todo"`, and `description` set to the checklist section name
+- **`/coaching/:topicId` — Topic detail**
+  - Back link + topic title
+  - Dark media player card (current episode title, duration, progress, play)
+  - Listen / Watch toggle pills — switches player + episode list filter
+  - Two columns:
+    - Left: "Key Takeaway" + one-sentence summary + **"Request support from List Bar"** button (creates a task with `title: "Coaching: <topic>"`, `description: <key takeaway>`, `task_type: todo`)
+    - Right: numbered episode list (title, duration, Listen/Watch action)
 
-**2. New file: `src/components/tasks/TaskActionPanel.tsx`**
-- Reusable action dialog matching the Transaction Detail pattern
-- Three options: "Book Directly" (sets `handled_by: self`), "We'll handle it" (sets `handled_by: listbar`), "Mark as complete" (toggles done)
-- Triggered from the task list row (chevron/action button) or the task detail panel
+### Database (migration)
+- `coaching_topics` — id, title, description, thumbnail_path (storage path), sort_order, created_at
+- `coaching_episodes` — id, topic_id, title, duration_seconds, media_type ('audio'|'video'), media_path, episode_number, key_takeaway
+- `coaching_progress` — id, user_id, episode_id, completed bool, last_position_seconds, updated_at (UNIQUE on user_id+episode_id)
+- RLS: topics + episodes readable by any authenticated user; progress is per-user CRUD on `auth.uid() = user_id`
 
-**3. Edit: `src/pages/Tasks.tsx`**
-- Add "Import from Contract" button in the header bar next to filters
-- Wire up the `ImportFromContractDialog` with the existing `createMutation`
-- Add `TaskActionPanel` dialog state, pass open/close handlers to the task list
+### Storage
+- Public bucket `coaching-media` for thumbnails, audio (.mp3), video (.mp4)
+- Public read policy so signed URLs aren't needed for playback
 
-**4. Edit: `src/components/tasks/TaskList.tsx`**
-- Add an action button (chevron) on each task row that opens the `TaskActionPanel`
-- Show a subtle badge/icon on tasks linked to a transaction (e.g. small house icon or "Deal" chip)
+### Files
+- New: `src/pages/Coaching.tsx`, `src/pages/CoachingTopic.tsx`
+- New: `src/components/coaching/TopicCard.tsx`, `ContinueCard.tsx`, `EpisodeRow.tsx`, `MediaPlayerCard.tsx`
+- Edit: `src/App.tsx` — replace placeholder route, add `/coaching/:topicId`
+- Migration: 3 tables + RLS + `coaching-media` storage bucket + RLS
 
-**5. Edit: `src/components/tasks/TaskDetail.tsx`**
-- Add the same three action buttons ("Book Directly", "We'll handle it", "Mark complete") in the detail panel for tasks linked to a transaction
+### Pre-existing build errors (fix in same change)
+TS errors in `src/pages/Contacts.tsx`, `src/pages/Seed.tsx`, `src/seed.tsx`, `src/pages/Tasks.tsx` — string literals don't satisfy DB enums (`listing_type`, `stage`, `priority`, `task_type`, `app_role`). Fix by typing the seed arrays with `Database["public"]["Tables"][...]["Insert"]` or narrowing literals with `as const`. Pure TS fix, no runtime change.
 
-**6. Database migration**
-- Add `handled_by` column (text, nullable) to the `tasks` table — stores `"listbar"` or `"self"`, matching the `transaction_checklist_items` pattern
-
-### Data flow
-- Transactions queried with `listings(address)` join for display
-- Checklist items queried from `transaction_checklist_items` filtered by selected transaction, `done = false`
-- Each imported item becomes a task row: `title` = label, `description` = section, `transaction_id` + `listing_id` set from the transaction
-- The `handled_by` field on tasks enables the same Book/Handle/Complete workflow from the transaction page
-
+### Out of scope
+- No coaching content seeding (you'll upload topics/episodes via the backend later, or I can add a small seed step on request)
+- No video transcription, comments, or quizzes
