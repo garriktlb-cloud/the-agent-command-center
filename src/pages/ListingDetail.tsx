@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -358,7 +359,7 @@ export default function ListingDetail() {
                       </p>
                       <div className="space-y-3">
                         {section.items.map((item) => (
-                          <ChecklistRow key={item.label} label={item.label} done={item.done} />
+                          <ChecklistRow key={item.label} label={item.label} done={item.done} interactive />
                         ))}
                       </div>
                     </div>
@@ -390,12 +391,7 @@ export default function ListingDetail() {
               </div>
 
               {/* Notes */}
-              <div className="rounded-lg border bg-card p-5">
-                <h2 className="font-heading font-semibold mb-2">Notes</h2>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {listing.notes || "Add internal notes, agent preferences, or coordination details…"}
-                </p>
-              </div>
+              <NotesEditor listingId={listing.id} initialNotes={listing.notes || ""} />
             </div>
 
             {/* Right */}
@@ -639,6 +635,40 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-baseline justify-between gap-4">
       <dt className="text-xs text-muted-foreground shrink-0">{label}</dt>
       <dd className="text-sm font-medium text-right">{value}</dd>
+    </div>
+  );
+}
+
+function NotesEditor({ listingId, initialNotes }: { listingId: string; initialNotes: string }) {
+  const [notes, setNotes] = useState(initialNotes);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("listings").update({ notes }).eq("id", listingId);
+    setSaving(false);
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border bg-card p-5">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="font-heading font-semibold">Notes</h2>
+        <Button size="sm" variant="outline" onClick={save} disabled={saving}>
+          {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
+        </Button>
+      </div>
+      <Textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Add internal notes, agent preferences, or coordination details…"
+        rows={4}
+        className="text-sm resize-none"
+      />
     </div>
   );
 }
