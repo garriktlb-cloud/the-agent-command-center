@@ -15,6 +15,8 @@ import Tasks from "@/pages/Tasks";
 import Auth from "@/pages/Auth";
 import Seed from "@/pages/Seed";
 import Contacts from "@/pages/Contacts";
+import Coaching from "@/pages/Coaching";
+import CoachingTopic from "@/pages/CoachingTopic";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,7 +49,8 @@ const App = () => (
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/marketing" element={<PlaceholderPage title="Marketing Center" />} />
-              <Route path="/coaching" element={<PlaceholderPage title="Coaching" />} />
+              <Route path="/coaching" element={<Coaching />} />
+              <Route path="/coaching/:topicId" element={<CoachingTopic />} />
               <Route path="/performance" element={<PlaceholderPage title="Performance" />} />
               <Route path="/business-tracker" element={<PlaceholderPage title="Business Tracker" />} />
               <Route path="/billing" element={<PlaceholderPage title="Billing" />} />

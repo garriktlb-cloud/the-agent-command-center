@@ -132,7 +132,7 @@ export default function Contacts() {
 
   const createMutation = useMutation({
     mutationFn: async (data: Partial<Contact>) => {
-      const { error } = await supabase.from("contacts").insert({ ...data, user_id: user!.id });
+      const { error } = await supabase.from("contacts").insert({ ...data, user_id: user!.id } as any);
       if (error) throw error;
     },
     onSuccess: () => {
