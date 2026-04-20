@@ -14,6 +14,7 @@ import Orders from "@/pages/Orders";
 import Tasks from "@/pages/Tasks";
 import Auth from "@/pages/Auth";
 import Seed from "@/pages/Seed";
+import Contacts from "@/pages/Contacts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,7 +45,7 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/vendors" element={<PlaceholderPage title="Vendors" />} />
               <Route path="/tasks" element={<Tasks />} />
-              <Route path="/contacts" element={<PlaceholderPage title="Contacts" />} />
+              <Route path="/contacts" element={<Contacts />} />
               <Route path="/marketing" element={<PlaceholderPage title="Marketing Center" />} />
               <Route path="/coaching" element={<PlaceholderPage title="Coaching" />} />
               <Route path="/performance" element={<PlaceholderPage title="Performance" />} />
