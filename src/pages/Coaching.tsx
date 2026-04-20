@@ -87,7 +87,7 @@ export default function Coaching() {
         return { ...t, _progress: pct, _remaining: remaining, _episodeLabel: episodeLabel };
       })
       .filter((t) => t._progress > 0 && t._progress < 100)
-      .slice(0, 4);
+      .slice(0, 3);
   }, [topics, progress]);
 
   const filtered = useMemo(() => {
@@ -117,7 +117,7 @@ export default function Coaching() {
       {continueRow.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-heading font-semibold text-foreground">Continue learning</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {continueRow.map((t) => (
               <ContinueCard
                 key={t.id}
