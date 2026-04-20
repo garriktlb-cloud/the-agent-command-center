@@ -23,7 +23,7 @@ export default function Coaching() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("coaching_topics")
-        .select("*, coaching_episodes(id, duration_seconds)")
+        .select("*, coaching_episodes(id, title, episode_number, duration_seconds)")
         .order("sort_order", { ascending: true });
       if (error) throw error;
       return data;
@@ -45,16 +45,26 @@ export default function Coaching() {
 
   const continueRow = useMemo(() => {
     if (!topics.length) return [];
-    const byTopic = new Map<string, { positionSum: number; durationSum: number }>();
+    const byTopic = new Map<
+      string,
+      { positionSum: number; durationSum: number; latest: any }
+    >();
     for (const p of progress as any[]) {
       const tid = p.coaching_episodes?.topic_id;
       if (!tid) continue;
       const ep = (topics as any[]).find((t) => t.id === tid)?.coaching_episodes
         ?.find((e: any) => e.id === p.episode_id);
       const dur = ep?.duration_seconds ?? 0;
-      const cur = byTopic.get(tid) ?? { positionSum: 0, durationSum: 0 };
+      const cur = byTopic.get(tid) ?? { positionSum: 0, durationSum: 0, latest: null };
       cur.positionSum += p.completed ? dur : p.last_position_seconds ?? 0;
       cur.durationSum += dur;
+      // Track the latest in-progress episode (not yet completed)
+      if (!p.completed) {
+        const prevUpdated = cur.latest?.updated_at ?? "";
+        if (!cur.latest || (p.updated_at ?? "") > prevUpdated) {
+          cur.latest = { ...p, _episode: ep };
+        }
+      }
       byTopic.set(tid, cur);
     }
     return (topics as any[])
@@ -67,7 +77,14 @@ export default function Coaching() {
         const pct = stats && totalDur > 0
           ? Math.min(100, Math.round((stats.positionSum / totalDur) * 100))
           : 0;
-        return { ...t, _progress: pct };
+        const latestEp = stats?.latest?._episode;
+        const remaining = latestEp
+          ? Math.max(0, (latestEp.duration_seconds ?? 0) - (stats!.latest.last_position_seconds ?? 0))
+          : 0;
+        const episodeLabel = latestEp
+          ? `Episode ${latestEp.episode_number}`
+          : null;
+        return { ...t, _progress: pct, _remaining: remaining, _episodeLabel: episodeLabel };
       })
       .filter((t) => t._progress > 0 && t._progress < 100)
       .slice(0, 4);
@@ -100,13 +117,14 @@ export default function Coaching() {
       {continueRow.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-heading font-semibold text-foreground">Continue learning</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {continueRow.map((t) => (
               <ContinueCard
                 key={t.id}
                 id={t.id}
                 title={t.title}
-                thumbnailUrl={publicUrl(t.thumbnail_path)}
+                episodeLabel={t._episodeLabel}
+                remainingSeconds={t._remaining}
                 progress={t._progress}
               />
             ))}
