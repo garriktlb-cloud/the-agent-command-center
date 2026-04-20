@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,15 +38,18 @@ const stageLabels: Record<string, string> = {
 
 const stageOrder = ["signed", "photography_scheduled", "coming_soon", "active", "live"];
 
-function getReadiness(status: string, customItems: ChecklistItem[]) {
-  const builtInTotal = 9;
-  const idx = stageOrder.indexOf(status);
-  const builtInDone = idx === -1 ? 0 : [4, 5, 7, 9][Math.min(idx, 3)] || 0;
-  const customDone = customItems.filter((i) => i.done).length;
-  const total = builtInTotal + customItems.length;
-  const done = Math.min(builtInDone, builtInTotal) + customDone;
-  return total === 0 ? 0 : Math.round((done / total) * 100);
-}
+// Default checklist items that get seeded into the DB on first visit
+const DEFAULT_CHECKLIST = [
+  { label: "Listing agreement signed", section: "Pre-Launch", sort_order: 0 },
+  { label: "Seller disclosures collected", section: "Pre-Launch", sort_order: 1 },
+  { label: "Pricing strategy confirmed with agent", section: "Pre-Launch", sort_order: 2 },
+  { label: "Showing instructions confirmed", section: "Pre-Launch", sort_order: 3 },
+  { label: "Photography scheduled and completed", section: "Marketing", sort_order: 4 },
+  { label: "MLS input complete", section: "Marketing", sort_order: 5 },
+  { label: "Signage installation confirmed", section: "Marketing", sort_order: 6 },
+  { label: "Activate listing on MLS", section: "Go Live", sort_order: 7 },
+  { label: "Confirm go-live with agent", section: "Go Live", sort_order: 8 },
+];
 
 function getMilestones(listing: Listing) {
   const milestones = [
@@ -62,36 +65,6 @@ function getMilestones(listing: Listing) {
   }));
 }
 
-function getBuiltInChecklist(listing: Listing) {
-  const currentIdx = stageOrder.indexOf(listing.status);
-  return [
-    {
-      section: "Pre-Launch",
-      items: [
-        { label: "Listing agreement signed", done: currentIdx >= 0 },
-        { label: "Seller disclosures collected", done: currentIdx >= 0 },
-        { label: "Pricing strategy confirmed with agent", done: currentIdx >= 0 },
-        { label: "Showing instructions confirmed", done: currentIdx >= 0 },
-      ],
-    },
-    {
-      section: "Marketing",
-      items: [
-        { label: "Photography scheduled and completed", done: currentIdx >= 1 },
-        { label: "MLS input complete", done: currentIdx >= 2 },
-        { label: "Signage installation confirmed", done: currentIdx >= 3 },
-      ],
-    },
-    {
-      section: "Go Live",
-      items: [
-        { label: "Activate listing on MLS", done: currentIdx >= 4 },
-        { label: "Confirm go-live with agent", done: currentIdx >= 4 },
-      ],
-    },
-  ];
-}
-
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -101,7 +74,6 @@ export default function ListingDetail() {
   const [newItemLabel, setNewItemLabel] = useState("");
   const [newItemSection, setNewItemSection] = useState("Custom");
   const [addItemOpen, setAddItemOpen] = useState(false);
-
   const [ohOpen, setOhOpen] = useState(false);
   const [ohDate, setOhDate] = useState("");
   const [ohStart, setOhStart] = useState("13:00");
@@ -117,7 +89,7 @@ export default function ListingDetail() {
     enabled: !!id,
   });
 
-  const { data: customItems = [] } = useQuery({
+  const { data: checklistItems = [], refetch: refetchChecklist } = useQuery({
     queryKey: ["listing_checklist_items", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -131,6 +103,25 @@ export default function ListingDetail() {
     },
     enabled: !!id,
   });
+
+  // Seed default checklist items if none exist yet
+  useEffect(() => {
+    if (!id || !user || checklistItems.length > 0) return;
+    const seed = async () => {
+      const { error } = await supabase.from("listing_checklist_items").insert(
+        DEFAULT_CHECKLIST.map((item) => ({
+          listing_id: id,
+          user_id: user.id,
+          label: item.label,
+          section: item.section,
+          sort_order: item.sort_order,
+          done: false,
+        }))
+      );
+      if (!error) refetchChecklist();
+    };
+    seed();
+  }, [id, user, checklistItems.length]);
 
   const { data: openHouses = [] } = useQuery({
     queryKey: ["open_houses", id],
@@ -153,6 +144,7 @@ export default function ListingDetail() {
         user_id: user!.id,
         label: newItemLabel.trim(),
         section: newItemSection.trim() || "Custom",
+        sort_order: checklistItems.length,
       });
       if (error) throw error;
     },
@@ -175,6 +167,7 @@ export default function ListingDetail() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["listing_checklist_items", id] }),
+    onError: () => toast.error("Failed to update item"),
   });
 
   const addOpenHouseMutation = useMutation({
@@ -190,10 +183,7 @@ export default function ListingDetail() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["open_houses", id] });
-      setOhDate("");
-      setOhStart("13:00");
-      setOhEnd("15:00");
-      setOhOpen(false);
+      setOhDate(""); setOhStart("13:00"); setOhEnd("15:00"); setOhOpen(false);
       toast.success("Open house added");
     },
     onError: () => toast.error("Failed to add open house"),
@@ -219,23 +209,18 @@ export default function ListingDetail() {
     );
   }
 
-  const builtInChecklist = getBuiltInChecklist(listing);
-  const readiness = getReadiness(listing.status, customItems);
+  const doneCount = checklistItems.filter((i) => i.done).length;
+  const totalCount = checklistItems.length;
+  const readiness = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
+  const remaining = totalCount - doneCount;
   const milestones = getMilestones(listing);
 
-  // Group custom items by section
-  const customBySection: Record<string, ChecklistItem[]> = {};
-  customItems.forEach((item) => {
-    if (!customBySection[item.section]) customBySection[item.section] = [];
-    customBySection[item.section].push(item);
+  // Group items by section
+  const bySection: Record<string, ChecklistItem[]> = {};
+  checklistItems.forEach((item) => {
+    if (!bySection[item.section]) bySection[item.section] = [];
+    bySection[item.section].push(item);
   });
-
-  const allDone =
-    builtInChecklist.flatMap((s) => s.items).filter((i) => i.done).length +
-    customItems.filter((i) => i.done).length;
-  const allTotal =
-    builtInChecklist.flatMap((s) => s.items).length + customItems.length;
-  const remaining = allTotal - allDone;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -244,8 +229,7 @@ export default function ListingDetail() {
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
             <Button
-              variant="ghost"
-              size="icon"
+              variant="ghost" size="icon"
               className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 -ml-2 mt-0.5"
               onClick={() => navigate("/listings")}
             >
@@ -270,10 +254,7 @@ export default function ListingDetail() {
             {listing.listing_date && (
               <div className="bg-primary-foreground/10 rounded-lg px-4 py-2 text-center">
                 <p className="text-xl font-bold">
-                  {new Date(listing.listing_date + "T00:00:00").toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {new Date(listing.listing_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </p>
                 <p className="text-[10px] uppercase tracking-wider text-primary-foreground/60">Go live</p>
               </div>
@@ -287,8 +268,7 @@ export default function ListingDetail() {
         <TabsList className="bg-transparent border-b rounded-none w-full justify-start px-0 h-auto pb-0">
           {["checklist", "details", "docs"].map((tab) => (
             <TabsTrigger
-              key={tab}
-              value={tab}
+              key={tab} value={tab}
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-2 capitalize"
             >
               {tab}
@@ -296,10 +276,9 @@ export default function ListingDetail() {
           ))}
         </TabsList>
 
-        {/* ── Checklist Tab ── */}
+        {/* Checklist Tab */}
         <TabsContent value="checklist" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left */}
             <div className="lg:col-span-2 space-y-6">
               {/* Launch Readiness */}
               <div className="rounded-lg border bg-card p-5">
@@ -324,12 +303,10 @@ export default function ListingDetail() {
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Add checklist item</DialogTitle>
-                      </DialogHeader>
+                      <DialogHeader><DialogTitle>Add checklist item</DialogTitle></DialogHeader>
                       <div className="space-y-3 pt-2">
                         <Input
-                          placeholder="Item label, e.g. Confirm lockbox code"
+                          placeholder="Item label"
                           value={newItemLabel}
                           onChange={(e) => setNewItemLabel(e.target.value)}
                         />
@@ -351,22 +328,7 @@ export default function ListingDetail() {
                 </div>
 
                 <div className="space-y-5">
-                  {/* Built-in sections */}
-                  {builtInChecklist.map((section) => (
-                    <div key={section.section}>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 border-b pb-2">
-                        {section.section}
-                      </p>
-                      <div className="space-y-3">
-                        {section.items.map((item) => (
-                          <ChecklistRow key={item.label} label={item.label} done={item.done} interactive />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Custom sections */}
-                  {Object.entries(customBySection).map(([section, items]) => (
+                  {Object.entries(bySection).map(([section, items]) => (
                     <div key={section}>
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 border-b pb-2">
                         {section}
@@ -378,15 +340,15 @@ export default function ListingDetail() {
                             label={item.label}
                             done={item.done}
                             completedAt={item.completed_at}
-                            onClick={() =>
-                              toggleItemMutation.mutate({ itemId: item.id, done: !item.done })
-                            }
-                            interactive
+                            onClick={() => toggleItemMutation.mutate({ itemId: item.id, done: !item.done })}
                           />
                         ))}
                       </div>
                     </div>
                   ))}
+                  {checklistItems.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Loading checklist…</p>
+                  )}
                 </div>
               </div>
 
@@ -394,7 +356,7 @@ export default function ListingDetail() {
               <NotesEditor listingId={listing.id} initialNotes={listing.notes || ""} />
             </div>
 
-            {/* Right */}
+            {/* Right column */}
             <div className="space-y-6">
               {/* Milestones */}
               <div className="rounded-lg border bg-card p-5">
@@ -405,52 +367,35 @@ export default function ListingDetail() {
                       <span className={m.done ? "text-muted-foreground" : "font-medium"}>{m.label}</span>
                       <span className="text-xs text-muted-foreground">
                         {m.done && m.date
-                          ? new Date(m.date).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })
-                          : m.done
-                          ? "✓"
-                          : "—"}
+                          ? new Date(m.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                          : m.done ? "✓" : "—"}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Quick Details */}
+              {/* Listing Details */}
               <div className="rounded-lg border bg-card p-5">
                 <h2 className="font-heading font-semibold mb-4">Listing Details</h2>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 border-b pb-1">
-                      Property
-                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 border-b pb-1">Property</p>
                     <dl className="space-y-2">
-                      <DetailRow
-                        label="Address"
-                        value={`${listing.address}${listing.city ? `, ${listing.city}` : ""}${listing.state ? ` ${listing.state}` : ""}`}
-                      />
-                      <DetailRow
-                        label="List price"
-                        value={listing.price ? `$${listing.price.toLocaleString()}` : "—"}
-                      />
+                      <DetailRow label="Address" value={`${listing.address}${listing.city ? `, ${listing.city}` : ""}${listing.state ? ` ${listing.state}` : ""}`} />
+                      <DetailRow label="List price" value={listing.price ? `$${listing.price.toLocaleString()}` : "—"} />
                       <DetailRow label="Type" value={listing.listing_type === "seller" ? "Seller" : "Buyer"} />
                       <DetailRow label="MLS #" value={listing.mls_number || "—"} />
                     </dl>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 border-b pb-1">
-                      Parties
-                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 border-b pb-1">Parties</p>
                     <dl className="space-y-2">
                       <DetailRow label="Seller" value={listing.seller_name || "—"} />
                     </dl>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 border-b pb-1">
-                      Dates
-                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 border-b pb-1">Dates</p>
                     <dl className="space-y-2">
                       <DetailRow label="List date" value={listing.listing_date || "—"} />
                       <DetailRow label="Expiration" value={listing.expiration_date || "—"} />
@@ -465,14 +410,10 @@ export default function ListingDetail() {
                   <h2 className="font-heading font-semibold">Open Houses</h2>
                   <Dialog open={ohOpen} onOpenChange={setOhOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Plus className="h-3.5 w-3.5 mr-1" /> Add
-                      </Button>
+                      <Button variant="outline" size="sm"><Plus className="h-3.5 w-3.5 mr-1" /> Add</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Add open house</DialogTitle>
-                      </DialogHeader>
+                      <DialogHeader><DialogTitle>Add open house</DialogTitle></DialogHeader>
                       <div className="space-y-3 pt-2">
                         <div>
                           <label className="text-xs text-muted-foreground">Date</label>
@@ -488,11 +429,7 @@ export default function ListingDetail() {
                             <Input type="time" value={ohEnd} onChange={(e) => setOhEnd(e.target.value)} />
                           </div>
                         </div>
-                        <Button
-                          className="w-full"
-                          disabled={!ohDate || addOpenHouseMutation.isPending}
-                          onClick={() => addOpenHouseMutation.mutate()}
-                        >
+                        <Button className="w-full" disabled={!ohDate || addOpenHouseMutation.isPending} onClick={() => addOpenHouseMutation.mutate()}>
                           {addOpenHouseMutation.isPending ? "Adding…" : "Add Open House"}
                         </Button>
                       </div>
@@ -507,19 +444,11 @@ export default function ListingDetail() {
                       <div key={oh.id} className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium">
-                            {new Date(oh.date + "T00:00:00").toLocaleDateString("en-US", {
-                              weekday: "long",
-                              month: "short",
-                              day: "numeric",
-                            })}
+                            {new Date(oh.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {oh.start_time.slice(0, 5)} – {oh.end_time.slice(0, 5)}
-                          </p>
+                          <p className="text-xs text-muted-foreground">{oh.start_time.slice(0, 5)} – {oh.end_time.slice(0, 5)}</p>
                         </div>
-                        <Badge variant="outline" className="text-[10px]">
-                          {oh.status}
-                        </Badge>
+                        <Badge variant="outline" className="text-[10px]">{oh.status}</Badge>
                       </div>
                     ))}
                   </div>
@@ -529,22 +458,17 @@ export default function ListingDetail() {
           </div>
         </TabsContent>
 
-        {/* ── Details Tab ── */}
+        {/* Details Tab */}
         <TabsContent value="details" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Property Details Form */}
             <div className="rounded-lg border bg-card p-6">
               <MarketingDetailsForm listingId={listing.id} listing={listing} />
             </div>
-
-            {/* Contract / Listing Info (read-only) */}
             <div className="rounded-lg border bg-card p-6">
               <h3 className="font-heading font-semibold mb-6">Contract Info</h3>
               <div className="space-y-6">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
-                    Property
-                  </p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">Property</p>
                   <dl className="space-y-3">
                     <DetailRow label="Address" value={listing.address} />
                     <DetailRow label="City" value={listing.city || "—"} />
@@ -556,9 +480,7 @@ export default function ListingDetail() {
                   </dl>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
-                    Parties & Dates
-                  </p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">Parties & Dates</p>
                   <dl className="space-y-3">
                     <DetailRow label="Seller" value={listing.seller_name || "—"} />
                     <DetailRow label="Status" value={stageLabels[listing.status] || listing.status} />
@@ -567,19 +489,11 @@ export default function ListingDetail() {
                   </dl>
                 </div>
               </div>
-              {listing.notes && (
-                <div className="mt-8">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3 border-b pb-1">
-                    Notes
-                  </p>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{listing.notes}</p>
-                </div>
-              )}
             </div>
           </div>
         </TabsContent>
 
-        {/* ── Docs Tab ── */}
+        {/* Docs Tab */}
         <TabsContent value="docs" className="mt-6">
           <div className="rounded-lg border bg-card p-6 text-center">
             <p className="text-muted-foreground text-sm">No documents uploaded yet.</p>
@@ -590,39 +504,24 @@ export default function ListingDetail() {
   );
 }
 
-/* ── Sub-components ── */
-
-function ChecklistRow({
-  label,
-  done,
-  completedAt,
-  onClick,
-  interactive,
-}: {
+function ChecklistRow({ label, done, completedAt, onClick }: {
   label: string;
   done: boolean;
   completedAt?: string | null;
   onClick?: () => void;
-  interactive?: boolean;
 }) {
   return (
-    <div
-      className={`flex items-start gap-3 ${interactive ? "cursor-pointer" : ""}`}
-      onClick={onClick}
-      role={interactive ? "button" : undefined}
-    >
+    <div className="flex items-start gap-3 cursor-pointer group" onClick={onClick}>
       {done ? (
         <CheckCircle2 className="h-4 w-4 text-foreground/50 mt-0.5 shrink-0" />
       ) : (
-        <Circle className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0" />
+        <Circle className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0 group-hover:text-foreground/40 transition-colors" />
       )}
       <div>
-        <p className={`text-sm ${done ? "text-muted-foreground" : "font-medium"}`}>{label}</p>
-        {done && (
+        <p className={`text-sm ${done ? "text-muted-foreground line-through" : "font-medium"}`}>{label}</p>
+        {done && completedAt && (
           <p className="text-xs text-muted-foreground/60">
-            {completedAt
-              ? `Completed ${new Date(completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-              : "Completed"}
+            Completed {new Date(completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
         )}
       </div>
@@ -648,10 +547,7 @@ function NotesEditor({ listingId, initialNotes }: { listingId: string; initialNo
     setSaving(true);
     const { error } = await supabase.from("listings").update({ notes }).eq("id", listingId);
     setSaving(false);
-    if (!error) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }
+    if (!error) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
   };
 
   return (
