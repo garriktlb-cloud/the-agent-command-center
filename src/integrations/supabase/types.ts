@@ -302,6 +302,45 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_insights: {
+        Row: {
+          created_at: string
+          hook_text: string
+          id: string
+          image_path: string | null
+          insight_body: string
+          social_caption: string
+          sort_order: number
+          talk_track: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hook_text: string
+          id?: string
+          image_path?: string | null
+          insight_body?: string
+          social_caption?: string
+          sort_order?: number
+          talk_track?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hook_text?: string
+          id?: string
+          image_path?: string | null
+          insight_body?: string
+          social_caption?: string
+          sort_order?: number
+          talk_track?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       open_houses: {
         Row: {
           created_at: string

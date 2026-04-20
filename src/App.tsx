@@ -17,6 +17,8 @@ import Seed from "@/pages/Seed";
 import Contacts from "@/pages/Contacts";
 import Coaching from "@/pages/Coaching";
 import CoachingTopic from "@/pages/CoachingTopic";
+import Marketing from "@/pages/Marketing";
+import MarketingInsightDetail from "@/pages/MarketingInsightDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,7 +50,8 @@ const App = () => (
               <Route path="/vendors" element={<PlaceholderPage title="Vendors" />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/contacts" element={<Contacts />} />
-              <Route path="/marketing" element={<PlaceholderPage title="Marketing Center" />} />
+              <Route path="/marketing" element={<Marketing />} />
+              <Route path="/marketing/:id" element={<MarketingInsightDetail />} />
               <Route path="/coaching" element={<Coaching />} />
               <Route path="/coaching/:topicId" element={<CoachingTopic />} />
               <Route path="/performance" element={<PlaceholderPage title="Performance" />} />
