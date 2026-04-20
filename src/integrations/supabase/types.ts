@@ -14,6 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
+      coaching_episodes: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          episode_number: number
+          id: string
+          key_takeaway: string | null
+          media_path: string | null
+          media_type: string
+          title: string
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number
+          episode_number?: number
+          id?: string
+          key_takeaway?: string | null
+          media_path?: string | null
+          media_type: string
+          title: string
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          episode_number?: number
+          id?: string
+          key_takeaway?: string | null
+          media_path?: string | null
+          media_type?: string
+          title?: string
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaching_episodes_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "coaching_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coaching_progress: {
+        Row: {
+          completed: boolean
+          created_at: string
+          episode_id: string
+          id: string
+          last_position_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          episode_id: string
+          id?: string
+          last_position_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          episode_id?: string
+          id?: string
+          last_position_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaching_progress_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "coaching_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coaching_topics: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          sort_order: number
+          thumbnail_path: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number
+          thumbnail_path?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number
+          thumbnail_path?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           company: string | null
