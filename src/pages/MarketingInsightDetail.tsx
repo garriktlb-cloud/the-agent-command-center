@@ -87,29 +87,25 @@ export default function MarketingInsightDetail() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left — image */}
         <div className="space-y-3">
-          <div className="aspect-[4/3] rounded-lg bg-[hsl(var(--primary))] relative flex items-center justify-center overflow-hidden">
-            {imgUrl ? (
-              <img
-                src={imgUrl}
-                alt={insight.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : null}
-            {/* Overlay hook text */}
-            <div className="relative z-10 px-6 text-center">
-              <p className="text-primary-foreground font-heading font-bold text-xl md:text-2xl leading-snug drop-shadow-lg">
-                {insight.hook_text}
-              </p>
+          {imgUrl ? (
+            <>
+              <div className="rounded-lg overflow-hidden border border-border">
+                <img
+                  src={imgUrl}
+                  alt={insight.title}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+              <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
+                <Download className="h-4 w-4" /> Download Image
+              </Button>
+            </>
+          ) : (
+            <div className="aspect-[4/3] rounded-lg bg-[hsl(var(--primary))] flex items-center justify-center">
+              <span className="text-primary-foreground/60 font-heading text-lg tracking-wide">
+                The List Bar
+              </span>
             </div>
-            {imgUrl && (
-              <div className="absolute inset-0 bg-black/40" />
-            )}
-          </div>
-
-          {imgUrl && (
-            <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
-              <Download className="h-4 w-4" /> Download Image
-            </Button>
           )}
         </div>
 
