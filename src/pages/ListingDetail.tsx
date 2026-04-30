@@ -185,6 +185,18 @@ export default function ListingDetail() {
     onError: () => toast.error("Failed to update item"),
   });
 
+  const updateItemMutation = useMutation({
+    mutationFn: async ({ itemId, patch }: { itemId: string; patch: Partial<ChecklistItem> }) => {
+      const { error } = await supabase
+        .from("listing_checklist_items")
+        .update(patch)
+        .eq("id", itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["listing_checklist_items", id] }),
+    onError: () => toast.error("Failed to update item"),
+  });
+
   const addOpenHouseMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("open_houses").insert({
