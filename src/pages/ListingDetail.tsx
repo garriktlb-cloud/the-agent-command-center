@@ -360,14 +360,23 @@ export default function ListingDetail() {
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 border-b pb-2">
                         {section}
                       </p>
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {items.map((item) => (
                           <ChecklistRow
                             key={item.id}
-                            label={item.label}
-                            done={item.done}
-                            completedAt={item.completed_at}
-                            onClick={() => toggleItemMutation.mutate({ itemId: item.id, done: !item.done })}
+                            item={item}
+                            vendor={item.vendor_id ? vendorById.get(item.vendor_id) : null}
+                            goLiveDate={listing.listing_date}
+                            onToggle={() => toggleItemMutation.mutate({ itemId: item.id, done: !item.done })}
+                            onAssigneeChange={(next) =>
+                              updateItemMutation.mutate({
+                                itemId: item.id,
+                                patch: { assignee_type: next.assignee_type, vendor_id: next.vendor_id },
+                              })
+                            }
+                            onDueDateChange={(due) =>
+                              updateItemMutation.mutate({ itemId: item.id, patch: { due_date: due } })
+                            }
                           />
                         ))}
                       </div>
