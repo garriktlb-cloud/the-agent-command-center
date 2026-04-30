@@ -540,26 +540,64 @@ export default function ListingDetail() {
   );
 }
 
-function ChecklistRow({ label, done, completedAt, onClick }: {
-  label: string;
-  done: boolean;
-  completedAt?: string | null;
-  onClick?: () => void;
+function ChecklistRow({
+  item,
+  vendor,
+  goLiveDate,
+  onToggle,
+  onAssigneeChange,
+  onDueDateChange,
+}: {
+  item: ChecklistItem;
+  vendor?: Vendor | null;
+  goLiveDate?: string | null;
+  onToggle: () => void;
+  onAssigneeChange: (next: AssigneeValue) => void;
+  onDueDateChange: (next: string | null) => void;
 }) {
   return (
-    <div className="flex items-start gap-3 cursor-pointer group" onClick={onClick}>
-      {done ? (
-        <CheckCircle2 className="h-4 w-4 text-foreground/50 mt-0.5 shrink-0" />
-      ) : (
-        <Circle className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0 group-hover:text-foreground/40 transition-colors" />
-      )}
-      <div>
-        <p className={`text-sm ${done ? "text-muted-foreground line-through" : "font-medium"}`}>{label}</p>
-        {done && completedAt && (
+    <div className="flex items-start gap-3 py-1.5 group">
+      {/* Checkbox */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="mt-0.5 shrink-0"
+        aria-label={item.done ? "Mark incomplete" : "Mark complete"}
+      >
+        {item.done ? (
+          <CheckCircle2 className="h-4 w-4 text-foreground/50" />
+        ) : (
+          <Circle className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground/40 transition-colors" />
+        )}
+      </button>
+
+      {/* Label */}
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm ${item.done ? "text-muted-foreground line-through" : "font-medium"}`}>
+          {item.label}
+        </p>
+        {item.done && item.completed_at && (
           <p className="text-xs text-muted-foreground/60">
-            Completed {new Date(completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            Completed {new Date(item.completed_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
         )}
+      </div>
+
+      {/* Right: assignee + due date chips */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <AssigneePopover
+          value={{
+            assignee_type: (item.assignee_type as AssigneeValue["assignee_type"]) ?? null,
+            vendor_id: item.vendor_id ?? null,
+          }}
+          vendor={vendor}
+          onChange={onAssigneeChange}
+        />
+        <DueDatePopover
+          value={item.due_date ?? null}
+          onChange={onDueDateChange}
+          goLiveDate={goLiveDate}
+        />
       </div>
     </div>
   );
