@@ -19,12 +19,15 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, Circle, Plus } from "lucide-react";
 import { MarketingDetailsForm } from "@/components/forms/MarketingDetailsForm";
+import { AssigneePopover, type AssigneeValue } from "@/components/listings/AssigneePopover";
+import { DueDatePopover } from "@/components/listings/DueDatePopover";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Listing = Tables<"listings">;
 type ChecklistItem = Tables<"listing_checklist_items">;
 type OpenHouse = Tables<"open_houses">;
+type Vendor = Tables<"vendors">;
 
 const stageLabels: Record<string, string> = {
   new: "New",
@@ -39,16 +42,16 @@ const stageLabels: Record<string, string> = {
 const stageOrder = ["signed", "photography_scheduled", "coming_soon", "active", "live"];
 
 // Default checklist items that get seeded into the DB on first visit
-const DEFAULT_CHECKLIST = [
-  { label: "Listing agreement signed", section: "Pre-Launch", sort_order: 0 },
-  { label: "Seller disclosures collected", section: "Pre-Launch", sort_order: 1 },
-  { label: "Pricing strategy confirmed with agent", section: "Pre-Launch", sort_order: 2 },
-  { label: "Showing instructions confirmed", section: "Pre-Launch", sort_order: 3 },
-  { label: "Photography scheduled and completed", section: "Marketing", sort_order: 4 },
-  { label: "MLS input complete", section: "Marketing", sort_order: 5 },
-  { label: "Signage installation confirmed", section: "Marketing", sort_order: 6 },
-  { label: "Activate listing on MLS", section: "Go Live", sort_order: 7 },
-  { label: "Confirm go-live with agent", section: "Go Live", sort_order: 8 },
+const DEFAULT_CHECKLIST: { label: string; section: string; sort_order: number; assignee_type: "self" | "listbar" | "vendor" | null }[] = [
+  { label: "Listing agreement signed", section: "Pre-Launch", sort_order: 0, assignee_type: "self" },
+  { label: "Seller disclosures collected", section: "Pre-Launch", sort_order: 1, assignee_type: "self" },
+  { label: "Pricing strategy confirmed with agent", section: "Pre-Launch", sort_order: 2, assignee_type: "self" },
+  { label: "Showing instructions confirmed", section: "Pre-Launch", sort_order: 3, assignee_type: "listbar" },
+  { label: "Photography scheduled and completed", section: "Marketing", sort_order: 4, assignee_type: "vendor" },
+  { label: "MLS input complete", section: "Marketing", sort_order: 5, assignee_type: "listbar" },
+  { label: "Signage installation confirmed", section: "Marketing", sort_order: 6, assignee_type: "vendor" },
+  { label: "Activate listing on MLS", section: "Go Live", sort_order: 7, assignee_type: "listbar" },
+  { label: "Confirm go-live with agent", section: "Go Live", sort_order: 8, assignee_type: "self" },
 ];
 
 function getMilestones(listing: Listing) {
