@@ -119,12 +119,24 @@ export default function ListingDetail() {
           section: item.section,
           sort_order: item.sort_order,
           done: false,
+          assignee_type: item.assignee_type,
         }))
       );
       if (!error) refetchChecklist();
     };
     seed();
   }, [id, user, checklistItems.length]);
+
+  const { data: vendors = [] } = useQuery({
+    queryKey: ["vendors", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vendors").select("*");
+      if (error) throw error;
+      return data as Vendor[];
+    },
+    enabled: !!user,
+  });
+  const vendorById = new Map(vendors.map((v) => [v.id, v]));
 
   const { data: openHouses = [] } = useQuery({
     queryKey: ["open_houses", id],
