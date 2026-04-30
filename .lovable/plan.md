@@ -1,100 +1,75 @@
-## News Feed for Agents
+## Add Assignee + Due Date columns to the Listing Checklist
 
-A new "News Feed" page where agents see AI-curated, bite-sized briefs about the Denver real estate market and the broader economic data that affects it (rates, inflation, jobs, housing supply). Each brief is written for quick scanning — headline, 2-3 sentence "what it means for you," source link, and tags.
+Right now each checklist row is just a circle and a label. We'll restructure every row into three columns so an agent can scan a listing and instantly see *what's left*, *who owns it*, and *when it's due*.
 
-### How AI pulls fresh data
-
-We'll use **Perplexity** (Sonar model) via an edge function. Perplexity is purpose-built for this — it does a live web search, grounds the answer in real articles, and returns citations. We'll prompt it to:
-
-1. Find the most relevant Denver-area real estate news from the past 7 days (DMAR reports, Denver Post real estate, Denverite, BusinessDen, Colorado Real Estate Journal, etc.)
-2. Pull current US economic indicators that move housing (Fed funds rate, 30-yr mortgage rate, CPI, jobs report, housing starts)
-3. For each item, generate: a 1-line headline, a 2-3 sentence agent-friendly takeaway ("what this means for your clients"), a category tag, and the source URL
-
-A second AI pass (Lovable AI / Gemini) ranks items by relevance to a Denver listing agent and writes the takeaway in the brand voice.
-
-### Refresh model
-
-- **Scheduled refresh**: a `pg_cron` job runs the edge function every morning at 6am MT — agents wake up to a fresh feed.
-- **Manual refresh**: an admin/agent can hit a "Refresh now" button on the page (rate-limited to once per hour) to pull on demand.
-
-Articles are cached in the database so we're not paying Perplexity on every page load.
-
-### Database
-
-New table `news_items`:
-
-| Column | Type |
-|---|---|
-| id | uuid PK |
-| category | text (`denver_market`, `mortgage_rates`, `economy`, `policy`) |
-| headline | text |
-| takeaway | text — agent-friendly 2-3 sentences |
-| source_url | text |
-| source_name | text |
-| published_at | timestamptz — when the source published |
-| created_at | timestamptz — when we ingested |
-| relevance_score | int (1-10) for sorting |
-
-RLS: any authenticated user can SELECT; only admins (and the edge function via service role) can INSERT/DELETE.
-
-A small `news_refresh_log` table tracks the last refresh time so we can throttle and show "Updated 3h ago."
-
-### Page: `/news`
-
-Layout:
+### The new row layout
 
 ```text
-┌─────────────────────────────────────────────────────────┐
-│  Banner: "Denver Market Pulse"                          │
-│  "AI-curated news + data shaping your market today"     │
-│  Last updated 2h ago  ·  [Refresh]                      │
-├─────────────────────────────────────────────────────────┤
-│  Filter chips: All | Denver Market | Rates | Economy    │
-├─────────────────────────────────────────────────────────┤
-│  ┌─ Card ──────────────────────────────────────────┐    │
-│  │ [Denver Market]  ·  2h ago                      │    │
-│  │ Median price up 3% in Highlands Ranch           │    │
-│  │ DMAR's October report shows luxury inventory…   │    │
-│  │ What it means: Buyers in the $1M+ range have…   │    │
-│  │ Source: DMAR Market Trends →                    │    │
-│  └─────────────────────────────────────────────────┘    │
-│  (more cards)                                           │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│ MARKETING                                                            │
+├────┬────────────────────────────────┬────────────────────┬──────────┤
+│ ○  │ Photography scheduled          │ 📷 Mtn View Photo  │ Oct 18   │
+│ ●  │ MLS input complete             │ 👤 Me              │ Oct 22   │
+│ ○  │ Signage installation           │ + Assign           │ + Date   │
+└────┴────────────────────────────────┴────────────────────┴──────────┘
 ```
 
-Cards are dense (not full-width image cards like Marketing) so an agent can scan 10-15 in under a minute. Category color-coded with subtle accent.
+- **Left** — the existing done circle (click to complete)
+- **Middle** — the task label (unchanged)
+- **Right column 1 — Assignee chip**: shows an icon + name. If unassigned, shows a faded "+ Assign" button.
+- **Right column 2 — Due date chip**: shows the date. If none, shows a faded "+ Date" button. Goes amber when ≤3 days away, red when overdue.
 
-Add **News** to the sidebar's Growth section between Marketing and Coaching, icon `Newspaper`.
+On mobile, the two right chips stack under the label so nothing wraps awkwardly.
 
-### Technical details
+### Assigning someone
 
-**Edge function** `supabase/functions/refresh-news/index.ts`:
-1. Calls Perplexity Sonar with a structured prompt asking for ~10 items across the 4 categories
-2. Uses Perplexity's `response_format: json_schema` to get structured output (headline, summary, source_url, source_name, category)
-3. Passes results to Lovable AI (gemini-3-flash-preview) to rewrite each `summary` as a brand-voice "takeaway" and assign a `relevance_score`
-4. Wipes items older than 7 days, inserts new ones, logs refresh timestamp
-5. Returns count of items inserted
+Clicking the assignee chip opens a small popover with three tabs:
 
-**Connector**: needs Perplexity connection (`standard_connectors--connect` with `connector_id: perplexity`). Perplexity does NOT use the gateway — uses `PERPLEXITY_API_KEY` directly.
+1. **Me** — the agent themselves (default suggestion)
+2. **List Bar** — assigns to the TC team (also creates a linked task in the TC's Tasks queue automatically, so it actually shows up for them)
+3. **Vendor** — searchable list of the user's existing vendors from the Vendors table, grouped by category (Photographer, Stager, Sign Co., Inspector, etc.). If the list is empty or the right vendor isn't there, an inline "+ Add new vendor" link opens a quick-add form (name, category, phone/email) without leaving the checklist.
 
-**Cron**: `pg_cron` job calling the edge function daily at 12:00 UTC (6am MT).
+The chip then displays a small icon based on assignee type (person / List Bar logomark / vendor category icon) plus the name, kept short so the row stays one line on desktop.
 
-**Frontend** `src/pages/News.tsx`:
-- TanStack Query fetches `news_items` ordered by `relevance_score DESC, published_at DESC`
-- Category filter chips
-- Refresh button calls the edge function, then refetches
-- Each card links out via `<a target="_blank">` to the source
+### Setting a due date
 
-**Files**:
-- `supabase/functions/refresh-news/index.ts` (new)
-- `src/pages/News.tsx` (new)
-- `src/components/news/NewsCard.tsx` (new)
-- `src/App.tsx` (add `/news` route)
-- `src/components/layout/AppSidebar.tsx` (add nav item)
-- DB migration: `news_items` + `news_refresh_log` tables, RLS, cron job
+Clicking the date chip opens a shadcn date picker popover. Quick presets at the top: **Today**, **In 3 days**, **Next week**, **On go-live date** (auto-fills from the listing's `listing_date`). Click a preset or pick a custom date.
 
-### What I need from you
+### Where this surfaces elsewhere
 
-1. **Confirm Perplexity** as the news source — I'll prompt you to connect it during build. (Alternative: Firecrawl + manually listed sources, but Perplexity is much simpler for this use case.)
-2. **Geographic scope** — Denver metro only, or expand to Colorado / national housing market? Plan assumes Denver metro + national rates/economy.
-3. **Daily auto-refresh OK?** Once per day at 6am MT keeps cost low (~30 Perplexity calls/month). Say if you'd prefer twice daily or weekly.
+Once each item has an assignee + due date, we can light up the rest of the app:
+
+- **Listings index card** — instead of generic "✓ MLS Photos / ○ Staging," show the next 2 open items as: `MLS input · Me · Oct 22` and `Photography · Mtn View · Oct 18`. Overdue items get a red dot.
+- **Dashboard "Deadlines"** — checklist items with a due date in the next 7 days roll up here alongside transaction deadlines, each linking back to its listing.
+- **Launch Milestones sidebar** (right column on the listing detail) — a milestone shows a red dot if any of its underlying checklist items are overdue.
+
+### Database changes
+
+Add three columns to `listing_checklist_items`:
+
+| Column | Type | Purpose |
+|---|---|---|
+| `assignee_type` | text (`self` / `listbar` / `vendor`) | who's handling it; nullable = unassigned |
+| `vendor_id` | uuid → `vendors.id` | only set when `assignee_type = 'vendor'` |
+| `due_date` | date | optional per-item deadline |
+
+Same three columns added to `transaction_checklist_items` for consistency (it already has a partial `handled_by` text field — we'll migrate that data into the new structured fields and deprecate the old column).
+
+When `assignee_type = 'listbar'`, a Postgres trigger creates a row in `tasks` (assigned_to = TC user, linked back via `listing_id`) so it shows up in the TC's Tasks page automatically.
+
+### Files to change
+
+- DB migration: add the three new columns + the List Bar → tasks trigger
+- `src/pages/ListingDetail.tsx` — restructure `ChecklistRow` into the new 4-column layout
+- `src/components/listings/AssigneePopover.tsx` (new) — tabbed Me / List Bar / Vendor picker with inline vendor add
+- `src/components/listings/DueDatePopover.tsx` (new) — shadcn calendar with presets
+- `src/components/dashboard/ListingCard.tsx` — show assignee + due date on the 2-item preview
+- `src/pages/Listings.tsx` — same denser preview on the index
+- `src/pages/TransactionDetail.tsx` — apply the same row layout for consistency
+- DEFAULT_CHECKLIST seed — pre-populate sensible default `assignee_type` per item (Photography → vendor, MLS input → self, Signage → vendor, Listing agreement → self, etc.)
+
+### Open questions
+
+1. **List Bar auto-task**: when an agent assigns an item to "List Bar," should it also create a real task in the TC's Tasks queue (recommended — otherwise the TC has no way to see it without opening every listing)?
+2. **Default assignees**: OK to pre-fill the seeded checklist with sensible defaults (Photography → vendor placeholder, MLS input → Me, etc.) so most rows already have an assignee on day one?
+3. **Vendor categories**: the Vendor tab will group by `vendors.category`. Do you have a fixed category list you want enforced (Photographer, Stager, Sign Co., Inspector, Cleaner, Handyman, Other), or keep it free-text like it is today?

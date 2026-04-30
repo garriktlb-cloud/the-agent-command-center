@@ -19,12 +19,15 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, Circle, Plus } from "lucide-react";
 import { MarketingDetailsForm } from "@/components/forms/MarketingDetailsForm";
+import { AssigneePopover, type AssigneeValue } from "@/components/listings/AssigneePopover";
+import { DueDatePopover } from "@/components/listings/DueDatePopover";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Listing = Tables<"listings">;
 type ChecklistItem = Tables<"listing_checklist_items">;
 type OpenHouse = Tables<"open_houses">;
+type Vendor = Tables<"vendors">;
 
 const stageLabels: Record<string, string> = {
   new: "New",
@@ -39,16 +42,16 @@ const stageLabels: Record<string, string> = {
 const stageOrder = ["signed", "photography_scheduled", "coming_soon", "active", "live"];
 
 // Default checklist items that get seeded into the DB on first visit
-const DEFAULT_CHECKLIST = [
-  { label: "Listing agreement signed", section: "Pre-Launch", sort_order: 0 },
-  { label: "Seller disclosures collected", section: "Pre-Launch", sort_order: 1 },
-  { label: "Pricing strategy confirmed with agent", section: "Pre-Launch", sort_order: 2 },
-  { label: "Showing instructions confirmed", section: "Pre-Launch", sort_order: 3 },
-  { label: "Photography scheduled and completed", section: "Marketing", sort_order: 4 },
-  { label: "MLS input complete", section: "Marketing", sort_order: 5 },
-  { label: "Signage installation confirmed", section: "Marketing", sort_order: 6 },
-  { label: "Activate listing on MLS", section: "Go Live", sort_order: 7 },
-  { label: "Confirm go-live with agent", section: "Go Live", sort_order: 8 },
+const DEFAULT_CHECKLIST: { label: string; section: string; sort_order: number; assignee_type: "self" | "listbar" | "vendor" | null }[] = [
+  { label: "Listing agreement signed", section: "Pre-Launch", sort_order: 0, assignee_type: "self" },
+  { label: "Seller disclosures collected", section: "Pre-Launch", sort_order: 1, assignee_type: "self" },
+  { label: "Pricing strategy confirmed with agent", section: "Pre-Launch", sort_order: 2, assignee_type: "self" },
+  { label: "Showing instructions confirmed", section: "Pre-Launch", sort_order: 3, assignee_type: "listbar" },
+  { label: "Photography scheduled and completed", section: "Marketing", sort_order: 4, assignee_type: "vendor" },
+  { label: "MLS input complete", section: "Marketing", sort_order: 5, assignee_type: "listbar" },
+  { label: "Signage installation confirmed", section: "Marketing", sort_order: 6, assignee_type: "vendor" },
+  { label: "Activate listing on MLS", section: "Go Live", sort_order: 7, assignee_type: "listbar" },
+  { label: "Confirm go-live with agent", section: "Go Live", sort_order: 8, assignee_type: "self" },
 ];
 
 function getMilestones(listing: Listing) {
@@ -116,12 +119,24 @@ export default function ListingDetail() {
           section: item.section,
           sort_order: item.sort_order,
           done: false,
+          assignee_type: item.assignee_type,
         }))
       );
       if (!error) refetchChecklist();
     };
     seed();
   }, [id, user, checklistItems.length]);
+
+  const { data: vendors = [] } = useQuery({
+    queryKey: ["vendors", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("vendors").select("*");
+      if (error) throw error;
+      return data as Vendor[];
+    },
+    enabled: !!user,
+  });
+  const vendorById = new Map(vendors.map((v) => [v.id, v]));
 
   const { data: openHouses = [] } = useQuery({
     queryKey: ["open_houses", id],
@@ -163,6 +178,18 @@ export default function ListingDetail() {
       const { error } = await supabase
         .from("listing_checklist_items")
         .update({ done, completed_at: done ? new Date().toISOString() : null })
+        .eq("id", itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["listing_checklist_items", id] }),
+    onError: () => toast.error("Failed to update item"),
+  });
+
+  const updateItemMutation = useMutation({
+    mutationFn: async ({ itemId, patch }: { itemId: string; patch: Partial<ChecklistItem> }) => {
+      const { error } = await supabase
+        .from("listing_checklist_items")
+        .update(patch)
         .eq("id", itemId);
       if (error) throw error;
     },
@@ -333,14 +360,23 @@ export default function ListingDetail() {
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 border-b pb-2">
                         {section}
                       </p>
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {items.map((item) => (
                           <ChecklistRow
                             key={item.id}
-                            label={item.label}
-                            done={item.done}
-                            completedAt={item.completed_at}
-                            onClick={() => toggleItemMutation.mutate({ itemId: item.id, done: !item.done })}
+                            item={item}
+                            vendor={item.vendor_id ? vendorById.get(item.vendor_id) : null}
+                            goLiveDate={listing.listing_date}
+                            onToggle={() => toggleItemMutation.mutate({ itemId: item.id, done: !item.done })}
+                            onAssigneeChange={(next) =>
+                              updateItemMutation.mutate({
+                                itemId: item.id,
+                                patch: { assignee_type: next.assignee_type, vendor_id: next.vendor_id },
+                              })
+                            }
+                            onDueDateChange={(due) =>
+                              updateItemMutation.mutate({ itemId: item.id, patch: { due_date: due } })
+                            }
                           />
                         ))}
                       </div>
@@ -504,26 +540,64 @@ export default function ListingDetail() {
   );
 }
 
-function ChecklistRow({ label, done, completedAt, onClick }: {
-  label: string;
-  done: boolean;
-  completedAt?: string | null;
-  onClick?: () => void;
+function ChecklistRow({
+  item,
+  vendor,
+  goLiveDate,
+  onToggle,
+  onAssigneeChange,
+  onDueDateChange,
+}: {
+  item: ChecklistItem;
+  vendor?: Vendor | null;
+  goLiveDate?: string | null;
+  onToggle: () => void;
+  onAssigneeChange: (next: AssigneeValue) => void;
+  onDueDateChange: (next: string | null) => void;
 }) {
   return (
-    <div className="flex items-start gap-3 cursor-pointer group" onClick={onClick}>
-      {done ? (
-        <CheckCircle2 className="h-4 w-4 text-foreground/50 mt-0.5 shrink-0" />
-      ) : (
-        <Circle className="h-4 w-4 text-muted-foreground/40 mt-0.5 shrink-0 group-hover:text-foreground/40 transition-colors" />
-      )}
-      <div>
-        <p className={`text-sm ${done ? "text-muted-foreground line-through" : "font-medium"}`}>{label}</p>
-        {done && completedAt && (
+    <div className="flex items-start gap-3 py-1.5 group">
+      {/* Checkbox */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="mt-0.5 shrink-0"
+        aria-label={item.done ? "Mark incomplete" : "Mark complete"}
+      >
+        {item.done ? (
+          <CheckCircle2 className="h-4 w-4 text-foreground/50" />
+        ) : (
+          <Circle className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground/40 transition-colors" />
+        )}
+      </button>
+
+      {/* Label */}
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm ${item.done ? "text-muted-foreground line-through" : "font-medium"}`}>
+          {item.label}
+        </p>
+        {item.done && item.completed_at && (
           <p className="text-xs text-muted-foreground/60">
-            Completed {new Date(completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            Completed {new Date(item.completed_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
         )}
+      </div>
+
+      {/* Right: assignee + due date chips */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <AssigneePopover
+          value={{
+            assignee_type: (item.assignee_type as AssigneeValue["assignee_type"]) ?? null,
+            vendor_id: item.vendor_id ?? null,
+          }}
+          vendor={vendor}
+          onChange={onAssigneeChange}
+        />
+        <DueDatePopover
+          value={item.due_date ?? null}
+          onChange={onDueDateChange}
+          goLiveDate={goLiveDate}
+        />
       </div>
     </div>
   );

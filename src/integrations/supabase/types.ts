@@ -170,9 +170,11 @@ export type Database = {
       }
       listing_checklist_items: {
         Row: {
+          assignee_type: string | null
           completed_at: string | null
           created_at: string
           done: boolean
+          due_date: string | null
           id: string
           label: string
           listing_id: string
@@ -180,11 +182,14 @@ export type Database = {
           sort_order: number
           updated_at: string
           user_id: string
+          vendor_id: string | null
         }
         Insert: {
+          assignee_type?: string | null
           completed_at?: string | null
           created_at?: string
           done?: boolean
+          due_date?: string | null
           id?: string
           label: string
           listing_id: string
@@ -192,11 +197,14 @@ export type Database = {
           sort_order?: number
           updated_at?: string
           user_id: string
+          vendor_id?: string | null
         }
         Update: {
+          assignee_type?: string | null
           completed_at?: string | null
           created_at?: string
           done?: boolean
+          due_date?: string | null
           id?: string
           label?: string
           listing_id?: string
@@ -204,6 +212,7 @@ export type Database = {
           sort_order?: number
           updated_at?: string
           user_id?: string
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -211,6 +220,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_checklist_items_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -594,9 +610,11 @@ export type Database = {
       }
       transaction_checklist_items: {
         Row: {
+          assignee_type: string | null
           completed_at: string | null
           created_at: string
           done: boolean
+          due_date: string | null
           handled_by: string | null
           id: string
           label: string
@@ -607,11 +625,14 @@ export type Database = {
           transaction_id: string
           updated_at: string
           user_id: string
+          vendor_id: string | null
         }
         Insert: {
+          assignee_type?: string | null
           completed_at?: string | null
           created_at?: string
           done?: boolean
+          due_date?: string | null
           handled_by?: string | null
           id?: string
           label: string
@@ -622,11 +643,14 @@ export type Database = {
           transaction_id: string
           updated_at?: string
           user_id: string
+          vendor_id?: string | null
         }
         Update: {
+          assignee_type?: string | null
           completed_at?: string | null
           created_at?: string
           done?: boolean
+          due_date?: string | null
           handled_by?: string | null
           id?: string
           label?: string
@@ -637,6 +661,7 @@ export type Database = {
           transaction_id?: string
           updated_at?: string
           user_id?: string
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -644,6 +669,13 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_checklist_items_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
