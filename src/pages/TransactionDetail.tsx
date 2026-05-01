@@ -198,7 +198,7 @@ export default function TransactionDetail() {
     if (emDays <= 3 && emDays >= 0) attentionItems.push(`Earnest money due in ${emDays} days`);
   }
 
-  const sectionNames = defaultChecklist.map((s) => s.section);
+  const sectionNames = Array.from(new Set(checklist.map((c) => c.section).filter(Boolean)));
 
   return (
     <div className="space-y-4 animate-fade-in">
