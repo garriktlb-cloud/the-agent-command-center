@@ -577,6 +577,13 @@ export default function TransactionDetail() {
           </div>
         </DialogContent>
       </Dialog>
+      <MecChangeDialog
+        open={mecDialog.open}
+        onOpenChange={(v) => setMecDialog({ ...mecDialog, open: v })}
+        transactionId={id!}
+        oldDate={txn.mec_date}
+        newDate={mecDialog.newDate}
+      />
     </div>
   );
 }
