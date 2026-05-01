@@ -146,6 +146,8 @@ export default function TransactionDetail() {
   const [addOpen, setAddOpen] = useState(false);
   const [addLabel, setAddLabel] = useState("");
   const [addSection, setAddSection] = useState("Custom");
+  const [mecDialog, setMecDialog] = useState<{ open: boolean; newDate: string }>({ open: false, newDate: "" });
+  const [mecInput, setMecInput] = useState("");
 
   /* ── queries ── */
   const { data: txn, isLoading } = useQuery({
