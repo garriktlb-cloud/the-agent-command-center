@@ -70,6 +70,7 @@ export type Database = {
           id: string
           is_default: boolean
           name: string
+          template_type: string
           updated_at: string
           user_id: string | null
         }
@@ -78,6 +79,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           name: string
+          template_type?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -86,6 +88,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           name?: string
+          template_type?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -761,6 +764,7 @@ export type Database = {
         Row: {
           buyer_name: string | null
           closing_date: string | null
+          contract_file_path: string | null
           contract_price: number | null
           created_at: string
           earnest_money_amount: number | null
@@ -768,6 +772,7 @@ export type Database = {
           health_score: number | null
           id: string
           listing_id: string | null
+          mec_date: string | null
           notes: string | null
           seller_name: string | null
           stage: Database["public"]["Enums"]["transaction_stage"]
@@ -777,6 +782,7 @@ export type Database = {
         Insert: {
           buyer_name?: string | null
           closing_date?: string | null
+          contract_file_path?: string | null
           contract_price?: number | null
           created_at?: string
           earnest_money_amount?: number | null
@@ -784,6 +790,7 @@ export type Database = {
           health_score?: number | null
           id?: string
           listing_id?: string | null
+          mec_date?: string | null
           notes?: string | null
           seller_name?: string | null
           stage?: Database["public"]["Enums"]["transaction_stage"]
@@ -793,6 +800,7 @@ export type Database = {
         Update: {
           buyer_name?: string | null
           closing_date?: string | null
+          contract_file_path?: string | null
           contract_price?: number | null
           created_at?: string
           earnest_money_amount?: number | null
@@ -800,6 +808,7 @@ export type Database = {
           health_score?: number | null
           id?: string
           listing_id?: string | null
+          mec_date?: string | null
           notes?: string | null
           seller_name?: string | null
           stage?: Database["public"]["Enums"]["transaction_stage"]
@@ -882,12 +891,20 @@ export type Database = {
         Args: { _listing_id: string; _template_id: string }
         Returns: number
       }
+      apply_transaction_template: {
+        Args: { _template_id: string; _transaction_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      recalc_transaction_deadlines: {
+        Args: { _only_incomplete?: boolean; _transaction_id: string }
+        Returns: number
       }
     }
     Enums: {

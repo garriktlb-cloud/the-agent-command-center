@@ -22,10 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, CheckCircle2, Circle, Plus, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Circle, Plus, ChevronRight, X, Pencil } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
+import { MecChangeDialog } from "@/components/transactions/MecChangeDialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Transaction = Tables<"transactions"> & { listing?: { address: string; status: string; listing_type: string } | null };
 type ChecklistItem = Tables<"transaction_checklist_items">;
@@ -144,6 +146,8 @@ export default function TransactionDetail() {
   const [addOpen, setAddOpen] = useState(false);
   const [addLabel, setAddLabel] = useState("");
   const [addSection, setAddSection] = useState("Custom");
+  const [mecDialog, setMecDialog] = useState<{ open: boolean; newDate: string }>({ open: false, newDate: "" });
+  const [mecInput, setMecInput] = useState("");
 
   /* ── queries ── */
   const { data: txn, isLoading } = useQuery({
@@ -408,6 +412,36 @@ export default function TransactionDetail() {
               <div className="rounded-lg border bg-card p-4">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Timeline</p>
                 <div className="flex items-center justify-between">
+                  <span className="text-sm">MEC</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-sm font-semibold flex items-center gap-1 hover:text-primary">
+                        {txn.mec_date ? format(parseISO(txn.mec_date), "MMM d") : "Set"}
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-2" align="end">
+                      <Input
+                        type="date"
+                        defaultValue={txn.mec_date ?? ""}
+                        onChange={(e) => setMecInput(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                      <Button
+                        size="sm"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          if (mecInput && mecInput !== txn.mec_date) {
+                            setMecDialog({ open: true, newDate: mecInput });
+                          }
+                        }}
+                      >
+                        Update
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex items-center justify-between mt-2">
                   <span className="text-sm">Closing</span>
                   <span className="text-sm font-semibold">
                     {txn.closing_date ? format(parseISO(txn.closing_date), "MMM d") : "—"}
@@ -543,6 +577,13 @@ export default function TransactionDetail() {
           </div>
         </DialogContent>
       </Dialog>
+      <MecChangeDialog
+        open={mecDialog.open}
+        onOpenChange={(v) => setMecDialog({ ...mecDialog, open: v })}
+        transactionId={id!}
+        oldDate={txn.mec_date}
+        newDate={mecDialog.newDate}
+      />
     </div>
   );
 }

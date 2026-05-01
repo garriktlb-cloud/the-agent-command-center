@@ -18,6 +18,7 @@ import {
 import { Plus, Search, LayoutList, CalendarDays, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
+import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
 
 type Transaction = Tables<"transactions"> & {
   listing?: { address: string; listing_type: string } | null;
@@ -217,6 +218,7 @@ function CalendarView({ transactions, onView }: { transactions: Transaction[]; o
 export default function Transactions() {
   const [view, setView] = useState<"table" | "calendar">("table");
   const [search, setSearch] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data: transactions, isLoading } = useQuery({
@@ -245,7 +247,7 @@ export default function Transactions() {
           <h1 className="text-2xl font-heading font-bold">Transactions</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Active deals, key dates, and health monitoring.</p>
         </div>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1" />New Transaction</Button>
+        <Button size="sm" onClick={() => setNewOpen(true)}><Plus className="h-4 w-4 mr-1" />New Transaction</Button>
       </div>
 
       <div className="flex items-center gap-3">
@@ -276,6 +278,7 @@ export default function Transactions() {
           <p className="text-sm">No transactions yet. Click "New Transaction" to add one.</p>
         </div>
       )}
+      <NewTransactionDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }

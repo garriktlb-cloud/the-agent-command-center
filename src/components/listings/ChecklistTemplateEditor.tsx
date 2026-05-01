@@ -27,6 +27,8 @@ const ANCHOR_OPTIONS = [
   { value: "none", label: "No date" },
   { value: "listing_date", label: "Listing date" },
   { value: "go_live_date", label: "Go-live date" },
+  { value: "mec_date", label: "MEC date" },
+  { value: "closing_date", label: "Closing date" },
 ];
 
 interface Props {
