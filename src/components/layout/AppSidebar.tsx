@@ -15,6 +15,8 @@ import {
   CreditCard,
   User,
   Settings,
+  ListChecks,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -55,7 +57,12 @@ const financialNav: NavItem[] = [
 
 const accountNav: NavItem[] = [
   { label: "Profile", path: "/profile", icon: User },
+  { label: "Checklist Templates", path: "/settings/checklist-templates", icon: ListChecks },
   { label: "Settings", path: "/settings", icon: Settings },
+];
+
+const adminNav: NavItem[] = [
+  { label: "Platform Checklist", path: "/admin/platform-checklist", icon: ShieldCheck },
 ];
 
 function SidebarSection({
