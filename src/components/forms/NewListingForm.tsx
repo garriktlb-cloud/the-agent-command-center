@@ -250,6 +250,24 @@ export function NewListingForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         />
 
+        <div>
+          <label className="text-sm font-medium mb-1.5 block">Apply checklist template</label>
+          <Select value={templateId} onValueChange={setTemplateId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No template (blank checklist)</SelectItem>
+              {templates.map((t: any) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                  {t.user_id === null ? " (Platform)" : t.is_default ? " ★" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <Button type="submit" className="w-full" disabled={submitting}>
           {submitting ? "Creating…" : "Create Listing"}
         </Button>
