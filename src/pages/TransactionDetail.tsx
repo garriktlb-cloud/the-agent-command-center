@@ -612,6 +612,13 @@ function ChecklistRow({ item, onToggle, onAction }: { item: ChecklistItem; onTog
       <button onClick={onAction} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </button>
+      <MecChangeDialog
+        open={mecDialog.open}
+        onOpenChange={(v) => setMecDialog({ ...mecDialog, open: v })}
+        transactionId={id!}
+        oldDate={txn.mec_date}
+        newDate={mecDialog.newDate}
+      />
     </div>
   );
 }
