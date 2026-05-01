@@ -19,6 +19,8 @@ import Coaching from "@/pages/Coaching";
 import CoachingTopic from "@/pages/CoachingTopic";
 import Marketing from "@/pages/Marketing";
 import MarketingInsightDetail from "@/pages/MarketingInsightDetail";
+import ChecklistTemplates from "@/pages/ChecklistTemplates";
+import PlatformChecklist from "@/pages/admin/PlatformChecklist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +61,8 @@ const App = () => (
               <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
               <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
               <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+              <Route path="/settings/checklist-templates" element={<ChecklistTemplates />} />
+              <Route path="/admin/platform-checklist" element={<PlatformChecklist />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
