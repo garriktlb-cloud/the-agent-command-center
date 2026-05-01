@@ -251,17 +251,37 @@ export default function TransactionDetail() {
                 <p className="text-sm font-semibold">
                   Checklist <span className="text-muted-foreground font-normal">(Outcomes)</span>
                 </p>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(true)}>
-                  <Plus className="h-3 w-3 mr-1" /> Quick add
-                </Button>
+                <div className="flex items-center gap-1">
+                  {checklist.length > 0 && (
+                    <ApplyTemplateButton
+                      transactionId={id!}
+                      hasMecDate={!!txn.mec_date}
+                      variant="ghost"
+                    />
+                  )}
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(true)}>
+                    <Plus className="h-3 w-3 mr-1" /> Quick add
+                  </Button>
+                </div>
               </div>
 
               {checklist.length === 0 ? (
-                <div className="rounded-lg border bg-card p-8 text-center">
-                  <p className="text-sm text-muted-foreground mb-3">No checklist items yet.</p>
-                  <Button variant="outline" size="sm" onClick={() => seedChecklist.mutate()}>
-                    Initialize Default Checklist
-                  </Button>
+                <div className="rounded-lg border bg-card p-8 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    No checklist items yet. Apply a template to get started.
+                  </p>
+                  <div className="flex items-center justify-center">
+                    <ApplyTemplateButton
+                      transactionId={id!}
+                      hasMecDate={!!txn.mec_date}
+                      label="Browse templates"
+                    />
+                  </div>
+                  {!txn.mec_date && (
+                    <p className="text-xs text-muted-foreground">
+                      Tip: set the MEC date first so deadlines auto-populate.
+                    </p>
+                  )}
                 </div>
               ) : (
                 Array.from(sections.entries()).map(([section, items]) => {
