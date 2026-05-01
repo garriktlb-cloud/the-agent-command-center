@@ -107,21 +107,25 @@ export default function ListingDetail() {
     enabled: !!id,
   });
 
-  // Seed default checklist items if none exist yet
+  // Seed checklist from agent's default template (or platform default) if none exist
   useEffect(() => {
     if (!id || !user || checklistItems.length > 0) return;
     const seed = async () => {
-      const { error } = await supabase.from("listing_checklist_items").insert(
-        DEFAULT_CHECKLIST.map((item) => ({
-          listing_id: id,
-          user_id: user.id,
-          label: item.label,
-          section: item.section,
-          sort_order: item.sort_order,
-          done: false,
-          assignee_type: item.assignee_type,
-        }))
-      );
+      // Find best template: user's default → first user template → platform default
+      const { data: templates } = await supabase
+        .from("checklist_templates")
+        .select("id, user_id, is_default")
+        .or(`user_id.eq.${user.id},user_id.is.null`);
+      if (!templates || templates.length === 0) return;
+      const userDefault = templates.find((t) => t.user_id === user.id && t.is_default);
+      const userAny = templates.find((t) => t.user_id === user.id);
+      const platform = templates.find((t) => t.user_id === null);
+      const template = userDefault ?? userAny ?? platform;
+      if (!template) return;
+      const { error } = await supabase.rpc("apply_template_to_listing", {
+        _template_id: template.id,
+        _listing_id: id,
+      });
       if (!error) refetchChecklist();
     };
     seed();
