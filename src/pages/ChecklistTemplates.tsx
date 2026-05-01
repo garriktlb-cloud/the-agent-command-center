@@ -164,13 +164,26 @@ export default function ChecklistTemplates() {
         >
           <ArrowLeft className="h-4 w-4" /> Back to templates
         </button>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start justify-between mb-6 gap-4">
           <div>
             <h1 className="font-heading text-2xl font-bold">{openTemplate.name}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {isOwn ? "Your template" : "Platform template (read-only)"}
             </p>
           </div>
+          {isOwn && (
+            <Button
+              variant={openTemplate.is_default ? "default" : "outline"}
+              size="sm"
+              onClick={() => !openTemplate.is_default && setDefault.mutate(openTemplate.id)}
+              disabled={openTemplate.is_default}
+            >
+              <Star
+                className={`h-4 w-4 mr-1.5 ${openTemplate.is_default ? "fill-current" : ""}`}
+              />
+              {openTemplate.is_default ? "Default for new listings" : "Make default"}
+            </Button>
+          )}
         </div>
         <ChecklistTemplateEditor templateId={openTemplate.id} canEdit={isOwn} />
       </div>
