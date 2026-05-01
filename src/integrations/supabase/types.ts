@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      checklist_template_items: {
+        Row: {
+          assignee_type: string | null
+          created_at: string
+          due_offset_anchor: string | null
+          due_offset_days: number | null
+          id: string
+          label: string
+          section: string
+          sort_order: number
+          template_id: string
+          updated_at: string
+          vendor_category: string | null
+        }
+        Insert: {
+          assignee_type?: string | null
+          created_at?: string
+          due_offset_anchor?: string | null
+          due_offset_days?: number | null
+          id?: string
+          label: string
+          section?: string
+          sort_order?: number
+          template_id: string
+          updated_at?: string
+          vendor_category?: string | null
+        }
+        Update: {
+          assignee_type?: string | null
+          created_at?: string
+          due_offset_anchor?: string | null
+          due_offset_days?: number | null
+          id?: string
+          label?: string
+          section?: string
+          sort_order?: number
+          template_id?: string
+          updated_at?: string
+          vendor_category?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_templates: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       coaching_episodes: {
         Row: {
           created_at: string
@@ -801,6 +878,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_template_to_listing: {
+        Args: { _listing_id: string; _template_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
