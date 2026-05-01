@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Form,
@@ -44,6 +44,29 @@ export function NewListingForm({ onSuccess }: { onSuccess?: () => void }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
+  const [templateId, setTemplateId] = useState<string>("");
+
+  const { data: templates = [] } = useQuery({
+    queryKey: ["available_templates", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("checklist_templates")
+        .select("id, name, user_id, is_default")
+        .or(`user_id.eq.${user!.id},user_id.is.null`)
+        .order("user_id", { nullsFirst: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Default to user's starred template, else platform template
+  useEffect(() => {
+    if (templateId || templates.length === 0) return;
+    const userDefault = templates.find((t: any) => t.user_id === user?.id && t.is_default);
+    const platform = templates.find((t: any) => t.user_id === null);
+    setTemplateId(userDefault?.id ?? platform?.id ?? "none");
+  }, [templates, templateId, user]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -80,6 +103,15 @@ export function NewListingForm({ onSuccess }: { onSuccess?: () => void }) {
         .single();
 
       if (error) throw error;
+
+      // Apply selected template (if any)
+      if (templateId && templateId !== "none") {
+        const { error: applyErr } = await supabase.rpc("apply_template_to_listing", {
+          _template_id: templateId,
+          _listing_id: data.id,
+        });
+        if (applyErr) console.error("Template apply failed:", applyErr);
+      }
 
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       toast.success("Listing created");
