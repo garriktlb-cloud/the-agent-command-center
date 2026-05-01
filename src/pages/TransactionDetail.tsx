@@ -27,97 +27,11 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { MecChangeDialog } from "@/components/transactions/MecChangeDialog";
+import { ApplyTemplateButton } from "@/components/transactions/ApplyTemplateButton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Transaction = Tables<"transactions"> & { listing?: { address: string; status: string; listing_type: string } | null };
 type ChecklistItem = Tables<"transaction_checklist_items">;
-
-/* ── default checklist blueprint per stage ── */
-const defaultChecklist: { section: string; items: { label: string; service_type?: string }[] }[] = [
-  {
-    section: "Contract Intake",
-    items: [
-      { label: "Upload signed contract" },
-      { label: "Log MEC date" },
-      { label: "Log all dates and deadlines from CBS" },
-      { label: "Log purchase price, closing date, possession date" },
-      { label: "Log earnest money amount, deadline, and holder" },
-      { label: "Log compensation structure" },
-      { label: "Log all party contact info" },
-      { label: "Flag HOA, pre-1978, solar, cash vs financed" },
-    ],
-  },
-  {
-    section: "Day 1",
-    items: [
-      { label: "Send intro email to title company" },
-      { label: "Send intro email to lender" },
-      { label: "Send intro email to other broker" },
-      { label: "Send intro email to buyer client with earnest money instructions and ABA" },
-      { label: "Update MLS status to Under Contract" },
-      { label: "Send wire fraud warning to buyer" },
-      { label: "Confirm title order placed" },
-    ],
-  },
-  {
-    section: "Earnest Money",
-    items: [
-      { label: "Monitor earnest money delivery daily" },
-      { label: "Confirm earnest money delivered to title" },
-      { label: "Obtain written receipt from title company" },
-      { label: "Log earnest money confirmed date" },
-      { label: "Notify agent of earnest money confirmation" },
-    ],
-  },
-  {
-    section: "Inspection",
-    items: [
-      { label: "Schedule inspection", service_type: "inspection" },
-      { label: "Confirm inspection date and time with all parties" },
-      { label: "Follow up on inspection report" },
-      { label: "Track inspection objection deadline" },
-      { label: "Log inspection resolution" },
-    ],
-  },
-  {
-    section: "Loan & Appraisal",
-    items: [
-      { label: "Confirm loan application submitted" },
-      { label: "Track appraisal order date" },
-      { label: "Follow up on appraisal completion" },
-      { label: "Log appraisal value" },
-      { label: "Confirm loan approval / clear to close" },
-    ],
-  },
-  {
-    section: "Title",
-    items: [
-      { label: "Confirm title commitment received" },
-      { label: "Review title exceptions" },
-      { label: "Track title objection deadline" },
-      { label: "Confirm title issues resolved" },
-    ],
-  },
-  {
-    section: "Pre-Close",
-    items: [
-      { label: "Schedule final walkthrough", service_type: "walkthrough" },
-      { label: "Confirm closing date and time" },
-      { label: "Confirm closing location / mobile notary" },
-      { label: "Review settlement statement" },
-      { label: "Confirm all documents ready" },
-    ],
-  },
-  {
-    section: "Closing",
-    items: [
-      { label: "Confirm funds wired" },
-      { label: "Confirm recording" },
-      { label: "Send closing confirmation to all parties" },
-      { label: "Update MLS status to Closed" },
-    ],
-  },
-];
 
 const serviceableTypes = ["inspection", "walkthrough"];
 
@@ -240,27 +154,6 @@ export default function TransactionDetail() {
     },
   });
 
-  const seedChecklist = useMutation({
-    mutationFn: async () => {
-      if (!user) return;
-      const rows = defaultChecklist.flatMap((sec, si) =>
-        sec.items.map((item, ii) => ({
-          transaction_id: id!,
-          user_id: user.id,
-          label: item.label,
-          section: sec.section,
-          sort_order: si * 100 + ii,
-          service_type: item.service_type || null,
-        }))
-      );
-      const { error } = await supabase.from("transaction_checklist_items").insert(rows);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["txn-checklist", id] });
-      toast.success("Checklist initialized");
-    },
-  });
 
   if (isLoading) {
     return (
@@ -305,7 +198,7 @@ export default function TransactionDetail() {
     if (emDays <= 3 && emDays >= 0) attentionItems.push(`Earnest money due in ${emDays} days`);
   }
 
-  const sectionNames = defaultChecklist.map((s) => s.section);
+  const sectionNames = Array.from(new Set(checklist.map((c) => c.section).filter(Boolean)));
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -358,17 +251,37 @@ export default function TransactionDetail() {
                 <p className="text-sm font-semibold">
                   Checklist <span className="text-muted-foreground font-normal">(Outcomes)</span>
                 </p>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(true)}>
-                  <Plus className="h-3 w-3 mr-1" /> Quick add
-                </Button>
+                <div className="flex items-center gap-1">
+                  {checklist.length > 0 && (
+                    <ApplyTemplateButton
+                      transactionId={id!}
+                      hasMecDate={!!txn.mec_date}
+                      variant="ghost"
+                    />
+                  )}
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(true)}>
+                    <Plus className="h-3 w-3 mr-1" /> Quick add
+                  </Button>
+                </div>
               </div>
 
               {checklist.length === 0 ? (
-                <div className="rounded-lg border bg-card p-8 text-center">
-                  <p className="text-sm text-muted-foreground mb-3">No checklist items yet.</p>
-                  <Button variant="outline" size="sm" onClick={() => seedChecklist.mutate()}>
-                    Initialize Default Checklist
-                  </Button>
+                <div className="rounded-lg border bg-card p-8 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    No checklist items yet. Apply a template to get started.
+                  </p>
+                  <div className="flex items-center justify-center">
+                    <ApplyTemplateButton
+                      transactionId={id!}
+                      hasMecDate={!!txn.mec_date}
+                      label="Browse templates"
+                    />
+                  </div>
+                  {!txn.mec_date && (
+                    <p className="text-xs text-muted-foreground">
+                      Tip: set the MEC date first so deadlines auto-populate.
+                    </p>
+                  )}
                 </div>
               ) : (
                 Array.from(sections.entries()).map(([section, items]) => {

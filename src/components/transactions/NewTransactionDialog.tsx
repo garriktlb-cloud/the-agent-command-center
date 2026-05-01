@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -53,39 +53,6 @@ export function NewTransactionDialog({ open, onOpenChange }: Props) {
     contract_price: "",
     earnest_money_amount: "",
     earnest_money_due: "",
-  });
-
-  // Get the platform CO transaction template id (for auto-apply)
-  const { data: coTemplateId } = useQuery({
-    queryKey: ["co_transaction_template"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("checklist_templates")
-        .select("id")
-        .is("user_id", null)
-        .eq("template_type", "transaction")
-        .eq("name", "Colorado Residential Contract")
-        .maybeSingle();
-      if (error) throw error;
-      return data?.id ?? null;
-    },
-  });
-
-  // Get user's default transaction add-on template (if any)
-  const { data: addOnTemplateId } = useQuery({
-    queryKey: ["my_default_txn_template", user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await supabase
-        .from("checklist_templates")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("template_type", "transaction")
-        .eq("is_default", true)
-        .maybeSingle();
-      return data?.id ?? null;
-    },
-    enabled: !!user,
   });
 
   const reset = () => {
@@ -167,26 +134,11 @@ export function NewTransactionDialog({ open, onOpenChange }: Props) {
         .single();
       if (error) throw error;
 
-      // Apply platform CO template
-      if (coTemplateId) {
-        await supabase.rpc("apply_transaction_template", {
-          _template_id: coTemplateId,
-          _transaction_id: txn.id,
-        });
-      }
-      // Apply user's add-on template if they have a default
-      if (addOnTemplateId) {
-        await supabase.rpc("apply_transaction_template", {
-          _template_id: addOnTemplateId,
-          _transaction_id: txn.id,
-        });
-      }
-
       return txn.id;
     },
     onSuccess: (id) => {
       qc.invalidateQueries({ queryKey: ["transactions"] });
-      toast.success("Transaction created with full Colorado checklist");
+      toast.success("Transaction created");
       reset();
       onOpenChange(false);
       navigate(`/transactions/${id}`);
