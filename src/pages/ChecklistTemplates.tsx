@@ -87,7 +87,7 @@ export default function ChecklistTemplates() {
           user_id: user.id,
           name: newName.trim(),
           template_type: activeTab,
-          is_default: myTemplates.length === 0,
+          is_default: myTemplates.filter((t) => (t.template_type ?? "listing") === activeTab).length === 0,
         })
         .select("id")
         .single();
