@@ -218,6 +218,7 @@ function CalendarView({ transactions, onView }: { transactions: Transaction[]; o
 export default function Transactions() {
   const [view, setView] = useState<"table" | "calendar">("table");
   const [search, setSearch] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data: transactions, isLoading } = useQuery({
