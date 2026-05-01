@@ -115,7 +115,8 @@ function SidebarSection({
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, roles } = useAuth();
+  const isAdmin = roles.includes("admin");
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const displayEmail = user?.email || "";
@@ -146,6 +147,7 @@ export default function AppSidebar() {
         <SidebarSection title="Growth" items={growthNav} collapsed={collapsed} />
         <SidebarSection title="Financial" items={financialNav} collapsed={collapsed} />
         <SidebarSection title="Account" items={accountNav} collapsed={collapsed} />
+        {isAdmin && <SidebarSection title="Admin" items={adminNav} collapsed={collapsed} />}
       </div>
 
       {/* User info & sign out */}
