@@ -412,6 +412,36 @@ export default function TransactionDetail() {
               <div className="rounded-lg border bg-card p-4">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Timeline</p>
                 <div className="flex items-center justify-between">
+                  <span className="text-sm">MEC</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-sm font-semibold flex items-center gap-1 hover:text-primary">
+                        {txn.mec_date ? format(parseISO(txn.mec_date), "MMM d") : "Set"}
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-2" align="end">
+                      <Input
+                        type="date"
+                        defaultValue={txn.mec_date ?? ""}
+                        onChange={(e) => setMecInput(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                      <Button
+                        size="sm"
+                        className="w-full mt-2"
+                        onClick={() => {
+                          if (mecInput && mecInput !== txn.mec_date) {
+                            setMecDialog({ open: true, newDate: mecInput });
+                          }
+                        }}
+                      >
+                        Update
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex items-center justify-between mt-2">
                   <span className="text-sm">Closing</span>
                   <span className="text-sm font-semibold">
                     {txn.closing_date ? format(parseISO(txn.closing_date), "MMM d") : "—"}
