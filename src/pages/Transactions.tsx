@@ -18,6 +18,7 @@ import {
 import { Plus, Search, LayoutList, CalendarDays, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
+import { NewTransactionDialog } from "@/components/transactions/NewTransactionDialog";
 
 type Transaction = Tables<"transactions"> & {
   listing?: { address: string; listing_type: string } | null;
