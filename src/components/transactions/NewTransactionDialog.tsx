@@ -134,26 +134,11 @@ export function NewTransactionDialog({ open, onOpenChange }: Props) {
         .single();
       if (error) throw error;
 
-      // Apply platform CO template
-      if (coTemplateId) {
-        await supabase.rpc("apply_transaction_template", {
-          _template_id: coTemplateId,
-          _transaction_id: txn.id,
-        });
-      }
-      // Apply user's add-on template if they have a default
-      if (addOnTemplateId) {
-        await supabase.rpc("apply_transaction_template", {
-          _template_id: addOnTemplateId,
-          _transaction_id: txn.id,
-        });
-      }
-
       return txn.id;
     },
     onSuccess: (id) => {
       qc.invalidateQueries({ queryKey: ["transactions"] });
-      toast.success("Transaction created with full Colorado checklist");
+      toast.success("Transaction created");
       reset();
       onOpenChange(false);
       navigate(`/transactions/${id}`);
