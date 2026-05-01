@@ -15,6 +15,8 @@ import {
   CreditCard,
   User,
   Settings,
+  ListChecks,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -55,7 +57,12 @@ const financialNav: NavItem[] = [
 
 const accountNav: NavItem[] = [
   { label: "Profile", path: "/profile", icon: User },
+  { label: "Checklist Templates", path: "/settings/checklist-templates", icon: ListChecks },
   { label: "Settings", path: "/settings", icon: Settings },
+];
+
+const adminNav: NavItem[] = [
+  { label: "Platform Checklist", path: "/admin/platform-checklist", icon: ShieldCheck },
 ];
 
 function SidebarSection({
@@ -108,7 +115,8 @@ function SidebarSection({
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, roles } = useAuth();
+  const isAdmin = roles.includes("admin");
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const displayEmail = user?.email || "";
@@ -139,6 +147,7 @@ export default function AppSidebar() {
         <SidebarSection title="Growth" items={growthNav} collapsed={collapsed} />
         <SidebarSection title="Financial" items={financialNav} collapsed={collapsed} />
         <SidebarSection title="Account" items={accountNav} collapsed={collapsed} />
+        {isAdmin && <SidebarSection title="Admin" items={adminNav} collapsed={collapsed} />}
       </div>
 
       {/* User info & sign out */}
