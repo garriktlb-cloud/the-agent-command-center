@@ -22,10 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, CheckCircle2, Circle, Plus, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Circle, Plus, ChevronRight, X, Pencil } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
+import { MecChangeDialog } from "@/components/transactions/MecChangeDialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Transaction = Tables<"transactions"> & { listing?: { address: string; status: string; listing_type: string } | null };
 type ChecklistItem = Tables<"transaction_checklist_items">;
