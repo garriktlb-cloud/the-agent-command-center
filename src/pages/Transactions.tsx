@@ -278,6 +278,7 @@ export default function Transactions() {
           <p className="text-sm">No transactions yet. Click "New Transaction" to add one.</p>
         </div>
       )}
+      <NewTransactionDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
