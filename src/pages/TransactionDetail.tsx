@@ -154,27 +154,6 @@ export default function TransactionDetail() {
     },
   });
 
-  const seedChecklist = useMutation({
-    mutationFn: async () => {
-      if (!user) return;
-      const rows = defaultChecklist.flatMap((sec, si) =>
-        sec.items.map((item, ii) => ({
-          transaction_id: id!,
-          user_id: user.id,
-          label: item.label,
-          section: sec.section,
-          sort_order: si * 100 + ii,
-          service_type: item.service_type || null,
-        }))
-      );
-      const { error } = await supabase.from("transaction_checklist_items").insert(rows);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["txn-checklist", id] });
-      toast.success("Checklist initialized");
-    },
-  });
 
   if (isLoading) {
     return (
