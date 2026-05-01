@@ -247,7 +247,7 @@ export default function Transactions() {
           <h1 className="text-2xl font-heading font-bold">Transactions</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Active deals, key dates, and health monitoring.</p>
         </div>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1" />New Transaction</Button>
+        <Button size="sm" onClick={() => setNewOpen(true)}><Plus className="h-4 w-4 mr-1" />New Transaction</Button>
       </div>
 
       <div className="flex items-center gap-3">
