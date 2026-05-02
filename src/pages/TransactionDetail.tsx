@@ -542,14 +542,11 @@ function ChecklistRow({ item, onToggle, onAction }: { item: ChecklistItem; onTog
       <button onClick={onAction} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </button>
-      <NewOrderDialog
-        open={newOrderOpen}
-        onOpenChange={setNewOrderOpen}
-        initialTransactionId={id}
-      />
     </div>
   );
 }
+
+function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>
