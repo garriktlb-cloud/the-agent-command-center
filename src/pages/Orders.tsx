@@ -273,16 +273,38 @@ export default function Orders() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold">Orders</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Book services or manage your order history.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Submit a request, browse the catalog, or speak it — the team picks it up.
+          </p>
         </div>
+        <Button onClick={() => { setNewOrderServiceId(undefined); setNewOrderOpen(true); }} className="gap-1.5">
+          <Plus className="h-4 w-4" /> New order
+        </Button>
+      </div>
+
+      {/* Quick service shortcuts */}
+      <div className="flex gap-2 flex-wrap">
+        {QUICK_SERVICES.map((s) => {
+          const Icon = s.icon;
+          return (
+            <button
+              key={s.id}
+              onClick={() => { setNewOrderServiceId(s.id); setNewOrderOpen(true); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-card hover:border-primary hover:text-primary transition-colors"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {s.label}
+            </button>
+          );
+        })}
       </div>
 
       <Tabs value={mainTab} onValueChange={setMainTab}>
         <TabsList>
-          <TabsTrigger value="book">Book a Service</TabsTrigger>
+          <TabsTrigger value="book">Service Catalog</TabsTrigger>
           <TabsTrigger value="history">Order History</TabsTrigger>
         </TabsList>
 
