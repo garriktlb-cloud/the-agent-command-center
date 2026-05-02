@@ -207,7 +207,7 @@ export default function TransactionDetail() {
         <ArrowLeft className="h-4 w-4 mr-1" /> Back
       </Button>
 
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Deal Strategist · 6AM Daily</p>
           <h1 className="text-2xl font-heading font-bold">{address}</h1>
@@ -217,6 +217,9 @@ export default function TransactionDetail() {
             {txn.seller_name && ` · Seller: ${txn.seller_name}`}
           </p>
         </div>
+        <Button size="sm" onClick={() => setNewOrderOpen(true)} className="gap-1.5 shrink-0">
+          <Plus className="h-4 w-4" /> New order
+        </Button>
       </div>
 
       {/* Tabs */}
