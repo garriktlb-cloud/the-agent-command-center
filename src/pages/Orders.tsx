@@ -205,6 +205,8 @@ export default function Orders() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [bookingService, setBookingService] = useState<typeof SERVICES[0] | null>(null);
   const [bookingNotes, setBookingNotes] = useState("");
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
+  const [newOrderServiceId, setNewOrderServiceId] = useState<string | undefined>(undefined);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders"],
