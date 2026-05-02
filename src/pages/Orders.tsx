@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Camera, ClipboardCheck, Sparkles, Home, Paintbrush, Truck, Wrench, Hammer, ArrowRight, Filter } from "lucide-react";
+import { Search, Camera, ClipboardCheck, Sparkles, Home, Paintbrush, Truck, Wrench, Hammer, ArrowRight, Plus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
+import { SERVICE_TYPES as QUICK_SERVICES } from "@/lib/orderServices";
 
 type Order = Tables<"orders">;
 
@@ -150,9 +152,16 @@ function OrderRow({ order }: { order: Order }) {
   return (
     <div className="flex items-center gap-4 rounded-lg border bg-card px-4 py-3 hover:shadow-sm transition-shadow">
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{order.title}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-sm truncate">{order.title}</p>
+          {order.source === "voice" && (
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <Sparkles className="h-2.5 w-2.5" /> Voice
+            </Badge>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground truncate">
-          {order.vendor_name || "No vendor"}{order.description ? ` · ${order.description}` : ""}
+          {order.vendor_name || "Awaiting vendor"}{order.description ? ` · ${order.description}` : ""}
         </p>
       </div>
       <Badge variant="outline" className={statusStyles[order.status] || ""}>
@@ -196,6 +205,8 @@ export default function Orders() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [bookingService, setBookingService] = useState<typeof SERVICES[0] | null>(null);
   const [bookingNotes, setBookingNotes] = useState("");
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
+  const [newOrderServiceId, setNewOrderServiceId] = useState<string | undefined>(undefined);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders"],
@@ -262,16 +273,38 @@ export default function Orders() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold">Orders</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Book services or manage your order history.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Submit a request, browse the catalog, or speak it — the team picks it up.
+          </p>
         </div>
+        <Button onClick={() => { setNewOrderServiceId(undefined); setNewOrderOpen(true); }} className="gap-1.5">
+          <Plus className="h-4 w-4" /> New order
+        </Button>
+      </div>
+
+      {/* Quick service shortcuts */}
+      <div className="flex gap-2 flex-wrap">
+        {QUICK_SERVICES.map((s) => {
+          const Icon = s.icon;
+          return (
+            <button
+              key={s.id}
+              onClick={() => { setNewOrderServiceId(s.id); setNewOrderOpen(true); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-card hover:border-primary hover:text-primary transition-colors"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {s.label}
+            </button>
+          );
+        })}
       </div>
 
       <Tabs value={mainTab} onValueChange={setMainTab}>
         <TabsList>
-          <TabsTrigger value="book">Book a Service</TabsTrigger>
+          <TabsTrigger value="book">Service Catalog</TabsTrigger>
           <TabsTrigger value="history">Order History</TabsTrigger>
         </TabsList>
 
@@ -419,6 +452,13 @@ export default function Orders() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Unified New Order Dialog (form mode) */}
+      <NewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        initialServiceId={newOrderServiceId}
+      />
     </div>
   );
 }

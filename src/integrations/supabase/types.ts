@@ -494,6 +494,11 @@ export type Database = {
           id: string
           listing_id: string | null
           priority: Database["public"]["Enums"]["priority_level"]
+          service_details: Json
+          service_type: string | null
+          source: string
+          source_confidence: number | null
+          source_transcript: string | null
           status: Database["public"]["Enums"]["order_status"]
           title: string
           transaction_id: string | null
@@ -512,6 +517,11 @@ export type Database = {
           id?: string
           listing_id?: string | null
           priority?: Database["public"]["Enums"]["priority_level"]
+          service_details?: Json
+          service_type?: string | null
+          source?: string
+          source_confidence?: number | null
+          source_transcript?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           title: string
           transaction_id?: string | null
@@ -530,6 +540,11 @@ export type Database = {
           id?: string
           listing_id?: string | null
           priority?: Database["public"]["Enums"]["priority_level"]
+          service_details?: Json
+          service_type?: string | null
+          source?: string
+          source_confidence?: number | null
+          source_transcript?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           title?: string
           transaction_id?: string | null

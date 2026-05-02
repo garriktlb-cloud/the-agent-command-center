@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, Circle, Plus } from "lucide-react";
+import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
 import { MarketingDetailsForm } from "@/components/forms/MarketingDetailsForm";
 import { AssigneePopover, type AssigneeValue } from "@/components/listings/AssigneePopover";
 import { DueDatePopover } from "@/components/listings/DueDatePopover";
@@ -81,6 +82,7 @@ export default function ListingDetail() {
   const [ohDate, setOhDate] = useState("");
   const [ohStart, setOhStart] = useState("13:00");
   const [ohEnd, setOhEnd] = useState("15:00");
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["listing", id],
@@ -277,7 +279,15 @@ export default function ListingDetail() {
               </p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setNewOrderOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" /> New order
+            </Button>
             <div className="bg-primary-foreground/10 rounded-lg px-4 py-2 text-center">
               <p className="text-xl font-bold">{readiness}%</p>
               <p className="text-[10px] uppercase tracking-wider text-primary-foreground/60">Launch ready</p>
@@ -540,6 +550,11 @@ export default function ListingDetail() {
           </div>
         </TabsContent>
       </Tabs>
+      <NewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        initialListingId={id}
+      />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, CheckCircle2, Circle, Plus, ChevronRight, X, Pencil } from "lucide-react";
+import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
@@ -62,6 +63,7 @@ export default function TransactionDetail() {
   const [addSection, setAddSection] = useState("Custom");
   const [mecDialog, setMecDialog] = useState<{ open: boolean; newDate: string }>({ open: false, newDate: "" });
   const [mecInput, setMecInput] = useState("");
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
 
   /* ── queries ── */
   const { data: txn, isLoading } = useQuery({
@@ -207,7 +209,7 @@ export default function TransactionDetail() {
         <ArrowLeft className="h-4 w-4 mr-1" /> Back
       </Button>
 
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Deal Strategist · 6AM Daily</p>
           <h1 className="text-2xl font-heading font-bold">{address}</h1>
@@ -217,6 +219,9 @@ export default function TransactionDetail() {
             {txn.seller_name && ` · Seller: ${txn.seller_name}`}
           </p>
         </div>
+        <Button size="sm" onClick={() => setNewOrderOpen(true)} className="gap-1.5 shrink-0">
+          <Plus className="h-4 w-4" /> New order
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -496,6 +501,11 @@ export default function TransactionDetail() {
         transactionId={id!}
         oldDate={txn.mec_date}
         newDate={mecDialog.newDate}
+      />
+      <NewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        initialTransactionId={id}
       />
     </div>
   );
