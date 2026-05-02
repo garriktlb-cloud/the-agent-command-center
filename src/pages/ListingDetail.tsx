@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ArrowLeft, CheckCircle2, Circle, Plus } from "lucide-react";
+import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
 import { MarketingDetailsForm } from "@/components/forms/MarketingDetailsForm";
 import { AssigneePopover, type AssigneeValue } from "@/components/listings/AssigneePopover";
 import { DueDatePopover } from "@/components/listings/DueDatePopover";
