@@ -550,6 +550,11 @@ export default function ListingDetail() {
           </div>
         </TabsContent>
       </Tabs>
+      <NewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        initialListingId={id}
+      />
     </div>
   );
 }
