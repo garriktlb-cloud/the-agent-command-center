@@ -452,6 +452,13 @@ export default function Orders() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Unified New Order Dialog (form mode) */}
+      <NewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        initialServiceId={newOrderServiceId}
+      />
     </div>
   );
 }
