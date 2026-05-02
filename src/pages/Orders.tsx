@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Camera, ClipboardCheck, Sparkles, Home, Paintbrush, Truck, Wrench, Hammer, ArrowRight, Filter } from "lucide-react";
+import { Search, Camera, ClipboardCheck, Sparkles, Home, Paintbrush, Truck, Wrench, Hammer, ArrowRight, Plus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
+import { SERVICE_TYPES as QUICK_SERVICES } from "@/lib/orderServices";
 
 type Order = Tables<"orders">;
 
