@@ -82,6 +82,7 @@ export default function ListingDetail() {
   const [ohDate, setOhDate] = useState("");
   const [ohStart, setOhStart] = useState("13:00");
   const [ohEnd, setOhEnd] = useState("15:00");
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["listing", id],
