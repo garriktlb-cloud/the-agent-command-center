@@ -1,6 +1,7 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppSidebar from "./AppSidebar";
+import { VoiceCaptureButton } from "@/components/orders/VoiceCaptureButton";
 
 export default function AppLayout() {
   const { user, loading } = useAuth();
@@ -25,6 +26,7 @@ export default function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <VoiceCaptureButton />
     </div>
   );
 }
