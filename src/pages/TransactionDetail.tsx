@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, CheckCircle2, Circle, Plus, ChevronRight, X, Pencil } from "lucide-react";
+import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
@@ -62,6 +63,7 @@ export default function TransactionDetail() {
   const [addSection, setAddSection] = useState("Custom");
   const [mecDialog, setMecDialog] = useState<{ open: boolean; newDate: string }>({ open: false, newDate: "" });
   const [mecInput, setMecInput] = useState("");
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
 
   /* ── queries ── */
   const { data: txn, isLoading } = useQuery({
