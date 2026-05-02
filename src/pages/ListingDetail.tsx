@@ -278,7 +278,15 @@ export default function ListingDetail() {
               </p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setNewOrderOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" /> New order
+            </Button>
             <div className="bg-primary-foreground/10 rounded-lg px-4 py-2 text-center">
               <p className="text-xl font-bold">{readiness}%</p>
               <p className="text-[10px] uppercase tracking-wider text-primary-foreground/60">Launch ready</p>
