@@ -152,9 +152,16 @@ function OrderRow({ order }: { order: Order }) {
   return (
     <div className="flex items-center gap-4 rounded-lg border bg-card px-4 py-3 hover:shadow-sm transition-shadow">
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{order.title}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-sm truncate">{order.title}</p>
+          {order.source === "voice" && (
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <Sparkles className="h-2.5 w-2.5" /> Voice
+            </Badge>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground truncate">
-          {order.vendor_name || "No vendor"}{order.description ? ` · ${order.description}` : ""}
+          {order.vendor_name || "Awaiting vendor"}{order.description ? ` · ${order.description}` : ""}
         </p>
       </div>
       <Badge variant="outline" className={statusStyles[order.status] || ""}>
