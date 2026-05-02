@@ -1,7 +1,10 @@
 // supabase/functions/voice-order-capture/index.ts
 // Accepts an audio file, transcribes it, and parses it into one or more
 // structured order drafts using the Lovable AI Gateway.
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
