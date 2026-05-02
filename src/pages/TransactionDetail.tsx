@@ -502,6 +502,11 @@ export default function TransactionDetail() {
         oldDate={txn.mec_date}
         newDate={mecDialog.newDate}
       />
+      <NewOrderDialog
+        open={newOrderOpen}
+        onOpenChange={setNewOrderOpen}
+        initialTransactionId={id}
+      />
     </div>
   );
 }
